@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.cs743.uwmparking.CreateNewPreferenceActivity">
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scrollbars="none"
+        android:layout_weight="1">
+
+        <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:stretchColumns="4">
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Where are you going?"
+                    android:id="@+id/whereToLabel"
+                    android:layout_column="1"/>
+
+                <Spinner
+                    android:layout_width="0dip"
+                    android:layout_weight="2"
+                    android:id="@+id/whereToList"
+                    android:layout_column="2"/>
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="What time?"
+                    android:id="@+id/whatTimeLabel"
+                    android:layout_column="1"/>
+
+                <TimePicker
+                    android:layout_width="0dip"
+                    android:layout_weight="2"
+                    android:id="@+id/whatTimePicker"
+                    android:layout_column="2"
+                    android:timePickerMode="spinner"/>
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="What do you prefer more?"
+                    android:id="@+id/prefLabel"
+                    android:layout_column="1"/>
+
+                <Spinner
+                    android:layout_width="0dip"
+                    android:layout_weight="2"
+                    android:id="@+id/prefSpinner"
+                    android:layout_column="2"/>
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Do you mind walking outside in inclement weather?"
+                    android:id="@+id/badWeatherLabel"
+                    android:layout_column="1"/>
+
+                <Switch
+                    android:layout_width="0dip"
+                    android:layout_weight="2"
+                    android:text="No"
+                    android:id="@+id/outsideSwitch"
+                    android:layout_column="2"/>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Do you require handicap parking?"
+                    android:id="@+id/disableParkLabel"
+                    android:layout_column="1"/>
+
+                <Switch
+                    android:layout_width="0dip"
+                    android:layout_weight="2"
+                    android:text="No"
+                    android:id="@+id/disableParkSwitch"
+                    android:layout_column="2"/>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Are you driving an electric car?"
+                    android:id="@+id/electricParkLabel"
+                    android:layout_column="1"/>
+
+                <Switch
+                    android:layout_width="0dip"
+                    android:layout_weight="2"
+                    android:text="No"
+                    android:id="@+id/electricParkSwitch"
+                    android:layout_column="2"/>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <Button
+                    android:layout_width="0dip"
+                    android:layout_weight="2"
+                    android:text="Find Parking!"
+                    android:id="@+id/findParkingButton"
+                    android:layout_column="2"
+                    android:onClick="findParking"/>
+            </TableRow>
+
+        </TableLayout>
+    </ScrollView>
+</RelativeLayout>

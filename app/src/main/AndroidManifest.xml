@@ -1,0 +1,43 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.cs743.uwmparkingfinder.UI">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme" >
+        <activity android:name=".MainActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ViewParkingMenuActivity"
+            android:label="@string/activityViewParkingMenuTitle" >
+        </activity>
+        <activity
+            android:name=".NotAvailableActivity"
+            android:label="@string/activityNotAvailableTitle" >
+        </activity>
+        <activity
+            android:name=".CreateNewPreferenceActivity"
+            android:label="@string/activityCreatePreferenceTitle" >
+        </activity>
+        <activity
+            android:name=".RecommendParkingActivity"
+            android:label="@string/activityRecommendParkingTitle" >
+        </activity>
+        <activity
+            android:name=".MonitorParkingLotActivity"
+            android:label="@string/activityMonitorParkingTitle" >
+        </activity>
+        <activity
+            android:name=".MonitorParkingSpotStatusActivity"
+            android:label="@string/activityMonitorParkingSpotStatusTitle">
+        </activity>
+    </application>
+
+</manifest>

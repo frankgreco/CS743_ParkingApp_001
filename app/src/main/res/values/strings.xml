@@ -1,0 +1,204 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">UWMParkingFinder</string>
+
+    <!-- Welcome Message -->
+    <string name="welcomeTitle">Welcome to the UWM Parking Locator App!</string>
+
+    <!-- View Parking Lots -->
+    <string name="activityViewParkingMenuTitle">Select a Parking Lot</string>
+
+    <!-- Not Available -->
+    <string name="activityNotAvailableTitle">Not Available</string>
+
+    <!-- Create New Preference -->
+    <string name="activityCreatePreferenceTitle">Create New Preference</string>
+
+    <!-- Recommend Parking -->
+    <string name="activityRecommendParkingTitle">Recommendation</string>
+
+    <!-- Monitor Parking -->
+    <string name="activityMonitorParkingTitle">Monitoring Parking Lot</string>
+
+    <!-- Monitor Parking Spot Status -->
+    <string name="activityMonitorParkingSpotStatusTitle">Monitoring Parking Spots</string>
+
+    <!-- Main menu -->
+    <string name="tocFindParking">Find Me Parking!</string>
+    <string name="tocViewParking">View Available Parking</string>
+    <string name="tocEditPrefs">Edit Preferences</string>
+    <string name="tocExit">Exit</string>
+    <string-array name="tableOfContents">
+        <item>@string/tocFindParking</item>
+        <item>@string/tocViewParking</item>
+        <item>@string/tocEditPrefs</item>
+        <item>@string/tocExit</item>
+    </string-array>
+
+    <!-- Available Buildings -->
+    <string name="BUILD_AH">AH:  Alumni House</string>
+    <string name="BUILD_AUP">AUP:  Architecture and Urban Planning</string>
+    <string name="BUILD_AC">AC:  Art Center</string>
+    <string name="BUILD_BOL">BOL:  Bolton Hall</string>
+    <string name="BUILD_CHA">CHA:  Chapman Hall</string>
+    <string name="BUILD_CHM">CHM:  Chemistry Building</string>
+    <string name="BUILD_CUN">CUN:  Cunningham Hall</string>
+    <string name="BUILD_CRT">CRT:  Curtain Hall</string>
+    <string name="BUILD_EMS">EMS:  Engineering and Mathematical Sciences</string>
+    <string name="BUILD_END">END:  Enderis Hall</string>
+    <string name="BUILD_ENG">ENG:  Engelmann Hall</string>
+    <string name="BUILD_GAR">GAR:  Garland Hall</string>
+    <string name="BUILD_GML">GML:  Golda Meir Library</string>
+    <string name="BUILD_GRH">GRH:  Greene Hall</string>
+    <string name="BUILD_GRM">GRM:  Greene Museum</string>
+    <string name="BUILD_HP">HP:  Heating Plant</string>
+    <string name="BUILD_HLT">HLT:  Holton Hall</string>
+    <string name="BUILD_HON">HON:  Honors Hall</string>
+    <string name="BUILD_JOH">JOH:  Johnston Hall</string>
+    <string name="BUILD_KSQA">KSQA:  Kennilworth Square Apartments</string>
+    <string name="BUILD_KEN">KEN:  Kenwood Interdisciplinary Research Center</string>
+    <string name="BUILD_KC">KC:  Klotsche Center</string>
+    <string name="BUILD_LAP">LAP:  Lapham Hall</string>
+    <string name="BUILD_LUB">LUB:  Lubar Hall</string>
+    <string name="BUILD_MEL">MEL:  Mellencamp Hall</string>
+    <string name="BUILD_MER">MER:  Merrill Hall</string>
+    <string name="BUILD_MIT">MIT:  Mitchell Hall</string>
+    <string name="BUILD_MUS">MUS:  Music Hall</string>
+    <string name="BUILD_NWQA">NWQA:  Northwest Quadrant A</string>
+    <string name="BUILD_NWQB">NWQB:  Northwest Quadrant B</string>
+    <string name="BUILD_NWQC">NWQC:  Northwest Quadrant C</string>
+    <string name="BUILD_NWQD">NWQD:  Northwest Quadrant D</string>
+    <string name="BUILD_NWQE">NWQE:  Northwest Quadrant E</string>
+    <string name="BUILD_NWQG">NWQG:  Northwest Quadrant Garage</string>
+    <string name="BUILD_NHC">NHC:  Norris Health Center</string>
+    <string name="BUILD_PAV">PAV:  Pavilion</string>
+    <string name="BUILD_PER">PER:  Pearse Hall</string>
+    <string name="BUILD_PHY">PHY:  Physics Building</string>
+    <string name="BUILD_SAB">SAB:  Sabin Hall</string>
+    <string name="BUILD_SAN">SAN:  Sandburg Residence Hall</string>
+    <string name="BUILD_THR">THR:  Theatre Building</string>
+    <string name="BUILD_UN">UN:  Union</string>
+    <string name="BUILD_VOG">VOG:  Vogel Hall</string>
+    <string name="BUILD_ZEL">ZEL:  Zelazo Hall</string>
+    <string-array name="ALL_BUILDINGS">
+        <item>@string/BUILD_AH</item>
+        <item>@string/BUILD_AUP</item>
+        <item>@string/BUILD_AC</item>
+        <item>@string/BUILD_BOL</item>
+        <item>@string/BUILD_CHA</item>
+        <item>@string/BUILD_CHM</item>
+        <item>@string/BUILD_CUN</item>
+        <item>@string/BUILD_CRT</item>
+        <item>@string/BUILD_EMS</item>
+        <item>@string/BUILD_END</item>
+        <item>@string/BUILD_ENG</item>
+        <item>@string/BUILD_GAR</item>
+        <item>@string/BUILD_GML</item>
+        <item>@string/BUILD_GRH</item>
+        <item>@string/BUILD_GRM</item>
+        <item>@string/BUILD_HP</item>
+        <item>@string/BUILD_HLT</item>
+        <item>@string/BUILD_HON</item>
+        <item>@string/BUILD_JOH</item>
+        <item>@string/BUILD_KSQA</item>
+        <item>@string/BUILD_KEN</item>
+        <item>@string/BUILD_KC</item>
+        <item>@string/BUILD_LAP</item>
+        <item>@string/BUILD_LUB</item>
+        <item>@string/BUILD_MEL</item>
+        <item>@string/BUILD_MER</item>
+        <item>@string/BUILD_MIT</item>
+        <item>@string/BUILD_MUS</item>
+        <item>@string/BUILD_NWQA</item>
+        <item>@string/BUILD_NWQB</item>
+        <item>@string/BUILD_NWQC</item>
+        <item>@string/BUILD_NWQD</item>
+        <item>@string/BUILD_NWQE</item>
+        <item>@string/BUILD_NWQG</item>
+        <item>@string/BUILD_NHC</item>
+        <item>@string/BUILD_PAV</item>
+        <item>@string/BUILD_PER</item>
+        <item>@string/BUILD_PHY</item>
+        <item>@string/BUILD_SAB</item>
+        <item>@string/BUILD_SAN</item>
+        <item>@string/BUILD_THR</item>
+        <item>@string/BUILD_UN</item>
+        <item>@string/BUILD_VOG</item>
+        <item>@string/BUILD_ZEL</item>
+    </string-array>
+
+    <!-- Optimization strategies -->
+    <string name="optCost">Cost</string>
+    <string name="optDist">Distance</string>
+    <string-array name="ALL_OPTIMIZATIONS">
+        <item>@string/optCost</item>
+        <item>@string/optDist</item>
+    </string-array>
+
+    <!-- Available parking lots -->
+    <!-- Lot numbers from http://www4.uwm.edu/parking/upload/1516-Campus-Parking-Rate-Info-150928.pdf -->
+    <string name="LOT_59001">Garland Hall</string>
+    <string name="LOT_59002">Alumni House</string>
+    <string name="LOT_59006">EMS South</string>
+    <string name="LOT_59007">Engleman Stadium East</string>
+    <string name="LOT_59008">Chapman Hall</string>
+    <string name="LOT_59009">Zelazo Hall</string>
+    <string name="LOT_59010">Pavilion</string>
+    <string name="LOT_59012">Johnston Hall</string>
+    <string name="LOT_59013">Mellencamp Hall</string>
+    <string name="LOT_59014">Klotsche Center</string>
+    <string name="LOT_59015">Paviliion East</string>
+    <string name="LOT_59016">Curtain Hall</string>
+    <string name="LOT_59018">Norris Health Center</string>
+    <string name="LOT_59019">Enderis Hall</string>
+    <string name="LOT_59020">Engleman Stadium West</string>
+    <string name="LOT_59023_B1">EMS Basement Floor B1</string>
+    <string name="LOT_59023_B2">EMS Basement Floor B2</string>
+    <string name="LOT_59023_B3">EMS Basement Floor B3</string>
+    <string name="LOT_59024">Sandburg Residence Hall</string>
+    <string name="LOT_59026">Kennilworth Square Apartments</string>
+    <string name="LOT_59033_1">NW Quad Structure Floor 1</string>
+    <string name="LOT_59033_2">NW Quad Structure Floor 2</string>
+    <string name="LOT_59033_3">NW Quad Structure Floor 3</string>
+    <string name="LOT_59033_4">NW Quad Structure Floor 4</string>
+    <string name="LOT_59034">NW Quad at NWQ C and D</string>
+    <string name="LOT_59035">NW Quad Near NQ Quad G</string>
+    <string name="LOT_59036">NW Quad Near NW Quad E</string>
+
+    <string-array name="LIST_OF_PARKING_LOTS">
+        <item>@string/LOT_59001</item>
+        <item>@string/LOT_59002</item>
+        <item>@string/LOT_59006</item>
+        <item>@string/LOT_59007</item>
+        <item>@string/LOT_59008</item>
+        <item>@string/LOT_59009</item>
+        <item>@string/LOT_59010</item>
+        <item>@string/LOT_59012</item>
+        <item>@string/LOT_59013</item>
+        <item>@string/LOT_59014</item>
+        <item>@string/LOT_59015</item>
+        <item>@string/LOT_59016</item>
+        <item>@string/LOT_59018</item>
+        <item>@string/LOT_59019</item>
+        <item>@string/LOT_59020</item>
+        <item>@string/LOT_59023_B1</item>
+        <item>@string/LOT_59023_B2</item>
+        <item>@string/LOT_59023_B3</item>
+        <item>@string/LOT_59024</item>
+        <item>@string/LOT_59026</item>
+        <item>@string/LOT_59033_1</item>
+        <item>@string/LOT_59033_2</item>
+        <item>@string/LOT_59033_3</item>
+        <item>@string/LOT_59033_4</item>
+        <item>@string/LOT_59034</item>
+        <item>@string/LOT_59035</item>
+        <item>@string/LOT_59036</item>
+    </string-array>
+
+    <!-- Reasons for why a parking lot was selected -->
+    <string name="LOT_REASON_NONE">No parking lot was found that met your criteria</string>
+    <string name="LOT_REASON_COST">This was the cheapest parking lot found that met your criteria</string>
+    <string name="LOT_REASON_DIST">This was the closest parking lot found that met your criteria</string>
+
+</resources>
+

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.cs743.uwmparking.RecommendParkingActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="--Parking Recommendation--"
+        android:id="@+id/parkingRecommendationHeader"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="--Recommended Lot--"
+        android:id="@+id/parkingRecommendationName"
+        android:layout_below="@+id/parkingRecommendationHeader"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="--Reason Header--"
+        android:id="@+id/parkingRecommendationReasonHeader"
+        android:layout_below="@+id/parkingRecommendationName"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="--Reason--"
+        android:id="@+id/parkingRecommendationReason"
+        android:layout_below="@+id/parkingRecommendationReasonHeader"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="--Confirmation--"
+        android:id="@+id/parkingRecommendationConfirmLabel"
+        android:layout_below="@+id/parkingRecommendationReason"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Yes"
+        android:id="@+id/parkingRecommendationYesButton"
+        android:layout_below="@+id/parkingRecommendationConfirmLabel"
+        android:layout_alignParentStart="true"
+        android:onClick="recommendParkingYes"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No"
+        android:id="@+id/parkingRecommendationNoButton"
+        android:layout_alignBottom="@+id/parkingRecommendationYesButton"
+        android:layout_alignParentEnd="true"
+        android:onClick="recommendParkingNo"/>
+
+</RelativeLayout>
