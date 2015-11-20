@@ -64,22 +64,36 @@
                     android:layout_width="0dip"
                     android:layout_weight="1"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="What do you prefer more?"
-                    android:id="@+id/prefLabel"
+                    android:text="Closer"
+                    android:id="@+id/prefLabelCloser"
                     android:layout_column="1"/>
-
-                <Spinner
-                    android:layout_width="0dip"
-                    android:layout_weight="2"
-                    android:id="@+id/prefSpinner"
-                    android:layout_column="2"/>
-            </TableRow>
-
-            <TableRow>
 
                 <TextView
                     android:layout_width="0dip"
                     android:layout_weight="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Cheaper"
+                    android:id="@+id/prefLabelCheaper"
+                    android:layout_column="2"
+                    android:gravity="right" />
+            </TableRow>
+
+            <TableRow
+                android:paddingBottom="10dp">
+                <SeekBar
+                    android:layout_column="1"
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:id="@+id/costDistBar"
+                    android:progress="50" />
+            </TableRow>
+
+            <TableRow
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="2"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Do you mind walking outside in inclement weather?"
                     android:id="@+id/badWeatherLabel"
@@ -87,19 +101,22 @@
 
                 <Switch
                     android:layout_width="0dip"
-                    android:layout_weight="2"
-                    android:text="No"
+                    android:layout_weight="1"
                     android:id="@+id/outsideSwitch"
-                    android:layout_column="2"/>
+                    android:layout_column="2"
+                    android:textOn="Yes"
+                    android:textOff="No"
+                    android:showText="true"/>
             </TableRow>
 
             <TableRow
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:paddingBottom="10dp">
 
                 <TextView
                     android:layout_width="0dip"
-                    android:layout_weight="1"
+                    android:layout_weight="2"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Do you require handicap parking?"
                     android:id="@+id/disableParkLabel"
@@ -107,19 +124,22 @@
 
                 <Switch
                     android:layout_width="0dip"
-                    android:layout_weight="2"
-                    android:text="No"
+                    android:layout_weight="1"
                     android:id="@+id/disableParkSwitch"
-                    android:layout_column="2"/>
+                    android:layout_column="2"
+                    android:textOn="Yes"
+                    android:textOff="No"
+                    android:showText="true"/>
             </TableRow>
 
             <TableRow
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:paddingBottom="10dp">
 
                 <TextView
                     android:layout_width="0dip"
-                    android:layout_weight="1"
+                    android:layout_weight="2"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Are you driving an electric car?"
                     android:id="@+id/electricParkLabel"
@@ -127,10 +147,12 @@
 
                 <Switch
                     android:layout_width="0dip"
-                    android:layout_weight="2"
-                    android:text="No"
+                    android:layout_weight="1"
                     android:id="@+id/electricParkSwitch"
-                    android:layout_column="2"/>
+                    android:layout_column="2"
+                    android:textOn="Yes"
+                    android:textOff="No"
+                    android:showText="true"/>
             </TableRow>
 
             <TableRow

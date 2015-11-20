@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -43,8 +44,10 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
     private Spinner whereToSpinner_;            ///< Where to spinner
     private TextView whatTimeLabel_;            ///< What time label
     private TimePicker whatTimePicker_;         ///< What time picker
-    private TextView prefLabel_;                ///< Parking preferences label
-    private Spinner prefSpinner_;               ///< Parking preferences spinner
+    private TextView prefLabelCloser_;          ///< Closer parking preferences label
+    private TextView prefLabelCheaper_;         ///< Cheaper parking preferences label
+    private SeekBar disORpriceBar_;             ///< Cost or Distance Preference: 0=prefer closer / 100=prefer cheaper
+    //private Spinner prefSpinner_;               ///< Parking preferences spinner
     private TextView prefOutsideLabel_;         ///< Outside preference label
     private Switch prefOutsideSwitch_;          ///< Outside parking switch
     private TextView handicapLabel_;            ///< Need handicap parking label
@@ -71,8 +74,10 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         whereToSpinner_ = (Spinner)findViewById(R.id.whereToList);
         whatTimeLabel_ = (TextView)findViewById(R.id.whatTimeLabel);
         whatTimePicker_ = (TimePicker)findViewById(R.id.whatTimePicker);
-        prefLabel_ = (TextView)findViewById(R.id.prefLabel);
-        prefSpinner_ = (Spinner)findViewById(R.id.prefSpinner);
+        prefLabelCloser_ = (TextView)findViewById(R.id.prefLabelCloser);
+        prefLabelCheaper_ = (TextView) findViewById(R.id.prefLabelCheaper);
+        disORpriceBar_ = (SeekBar) findViewById(R.id.costDistBar);
+        //prefSpinner_ = (Spinner)findViewById(R.id.prefSpinner);
         prefOutsideLabel_ = (TextView)findViewById(R.id.badWeatherLabel);
         prefOutsideSwitch_= (Switch)findViewById(R.id.outsideSwitch);
         handicapLabel_ = (TextView)findViewById(R.id.disableParkLabel);
@@ -95,10 +100,10 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         whereToSpinner_.setAdapter(whereToAdapter);
 
         // Populate the preference spinner - reuse TOC text view layout
-        String[] optList = res.getStringArray(R.array.ALL_OPTIMIZATIONS);
+        /*String[] optList = res.getStringArray(R.array.ALL_OPTIMIZATIONS);
         ArrayAdapter optAdapter = new ArrayAdapter<String>(this, R.layout.activity_toclistview, optList);
         optAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-        prefSpinner_.setAdapter(optAdapter);
+        prefSpinner_.setAdapter(optAdapter);*/
     }
 
     /**
@@ -121,7 +126,8 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         int destMin = whatTimePicker_.getMinute();
 
         // Read optimization preference value
-        String optimization = prefSpinner_.getSelectedItem().toString();
+        //String optimization = prefSpinner_.getSelectedItem().toString();
+        int disORprice = disORpriceBar_.getProgress();
 
         // Read outdoor preference
         boolean outsideAllowed = prefOutsideSwitch_.isChecked();
@@ -134,14 +140,14 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
 
         // Package up preferences
         Resources res = getResources();
-        ParkingPreferences.OPT_STRATEGY optStrategy = ParkingPreferences.OPT_STRATEGY.OPT_COST;
+        /*ParkingPreferences.OPT_STRATEGY optStrategy = ParkingPreferences.OPT_STRATEGY.OPT_COST;
         if (optimization.equalsIgnoreCase(res.getString(R.string.optDist)))
         {
             optStrategy = ParkingPreferences.OPT_STRATEGY.OPT_DIST;
-        }
+        }*/
 
         ParkingPreferences preferences = new ParkingPreferences(destination, destHour, destMin,
-                                                                optStrategy, outsideAllowed,
+                                                                disORprice, outsideAllowed,
                                                                 disableParkNeeded,
                                                                 electricParkNeeded);
 

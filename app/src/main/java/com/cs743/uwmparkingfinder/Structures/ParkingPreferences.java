@@ -20,18 +20,19 @@ package com.cs743.uwmparkingfinder.Structures;
 public class ParkingPreferences
 {
     /*************************  Class Static Variables  ***********************/
-    public enum OPT_STRATEGY
+    /*public enum OPT_STRATEGY
     {
         OPT_COST,                           ///< Optimize based on cost
         OPT_DIST                            ///< Optimize based on distance
-    }
+    }*/
 
     /*************************  Class Member Variables  ***********************/
 
     private String destination_;            ///< Destination building
     private int destTimeHour_;              ///< Destination time (hours part)
     private int destTimeMin_;               ///< Destination time (minute part)
-    private OPT_STRATEGY optimization_;     ///< Preferred optimization
+    //private OPT_STRATEGY optimization_;     ///< Preferred optimization
+    private int disORprice_;                ///< Cost or Distance Preference: 0=prefer closer / 100=prefer cheaper
     private boolean allowOutside_;          ///< True if outside parking ok
     private boolean handicapReq_;           ///< True if require handicap parking
     private boolean electricReq_;           ///< True if require electric parking
@@ -46,7 +47,8 @@ public class ParkingPreferences
         destination_ = null;
         destTimeHour_ = 0;
         destTimeMin_ = 0;
-        optimization_ = OPT_STRATEGY.OPT_COST;
+        //optimization_ = OPT_STRATEGY.OPT_COST;
+        disORprice_=50;
         allowOutside_ = true;
         handicapReq_ = false;
         electricReq_ = false;
@@ -64,16 +66,17 @@ public class ParkingPreferences
      * @param electricReq True if require electric plug-in parking
      */
     public ParkingPreferences(String destination, int hours, int min,
-                              OPT_STRATEGY optimization, boolean outsideOk,
+                              int optimization, boolean outsideOk,
                               boolean handicapReq, boolean electricReq)
     {
         destination_ = destination;
         destTimeHour_ = hours;
         destTimeMin_ = min;
-        optimization_ = optimization;
+        //optimization_ = optimization;
+        disORprice_=optimization;
         allowOutside_ = outsideOk;
         handicapReq_ = handicapReq;
-        electricReq_ = electricReq_;
+        electricReq_ = electricReq;
     }
 
     /**
@@ -135,11 +138,11 @@ public class ParkingPreferences
      *
      * @return true if able to update optimization strategy successfully, false otherwise
      */
-    public boolean setOptimization(OPT_STRATEGY optimization)
+    public boolean setOptimization(int optimization)
     {
         boolean success = true;
-
-        if ((optimization != OPT_STRATEGY.OPT_COST) ||
+        disORprice_=optimization;
+       /* if ((optimization != OPT_STRATEGY.OPT_COST) ||
             (optimization != OPT_STRATEGY.OPT_DIST))
         {
             success = false;
@@ -147,8 +150,7 @@ public class ParkingPreferences
         else
         {
             optimization_ = optimization;
-        }
-
+        }*/
         return success;
     }
 
@@ -235,9 +237,9 @@ public class ParkingPreferences
      *
      * @return Optimization strategy
      */
-    public OPT_STRATEGY getOptimization()
+    public int getOptimization()
     {
-        return optimization_;
+        return disORprice_;
     }
 
     /**
