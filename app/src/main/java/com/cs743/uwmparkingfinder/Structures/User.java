@@ -6,6 +6,7 @@ package com.cs743.uwmparkingfinder.Structures;
 public class User {
 
     private String username;
+    private String password;
     private String first;
     private String last;
     private String phone;
@@ -67,6 +68,14 @@ public class User {
 
     public void setDistORprice(int distORprice) {
         this.distORprice = distORprice;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override

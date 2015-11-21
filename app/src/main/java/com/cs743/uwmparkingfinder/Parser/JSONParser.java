@@ -97,6 +97,7 @@ public class JSONParser {
                 JSONObject obj = arr.getJSONObject(i);
 
                 user.setUsername(obj.getString("username"));
+                user.setPassword(obj.getString("password"));
                 user.setFirst(obj.getString("first_name"));
                 user.setLast(obj.getString("last_name"));
                 user.setEmail(obj.getString("email"));
