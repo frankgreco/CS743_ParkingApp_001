@@ -105,6 +105,7 @@ public class EditPreferencesActivity extends AppCompatActivity {
             //p.setParam("query","Whatever the query is named");
             //new savePreferencesToDatabase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,p);
         }
+        //TODO: should we update the preferences for Session.currentUser as well as save to the database?
     }
 
     private class savePreferencesToDatabase extends AsyncTask<RequestPackage,String,String>{

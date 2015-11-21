@@ -26,8 +26,12 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.cs743.uwmparkingfinder.Algorithm.Algorithm;
+import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.ParkingPreferences;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+
+import java.util.List;
 
 /****************************  Class Definitions  *****************************/
 
@@ -209,7 +213,13 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
 
         // TODO:  IMPLEMENT FUNCTION - requires backend algorithm
         Resources res = getResources();
-        return new SelectedParkingLot(res.getString(R.string.LOT_59020),
-                                      res.getString(R.string.LOT_REASON_DIST));
+        Algorithm algorithm = new Algorithm();
+        List<Lot> sortedLots=algorithm.getSortedLotList(preferences.getDestination());
+        if (sortedLots.size()==0) {
+            return new SelectedParkingLot("Not found", "System was not able to find a parking lot.");
+        } else {
+            String reason=disORpriceBar_.getProgress()>50? "Cheapest":"Closest";
+            return new SelectedParkingLot(sortedLots.get(0).getName(),"This was the "+reason+" parking lot found that best met your criteria:");
+        }
     }
 }
