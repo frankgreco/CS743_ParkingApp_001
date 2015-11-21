@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
         System.out.println("Processing edit preferences selection");
 
         // For now, display the feature not available page
-        Intent intent = new Intent(this, NotAvailableActivity.class);
+        Intent intent = new Intent(this, EditPreferencesActivity.class);
         startActivity(intent);
     }
 }
