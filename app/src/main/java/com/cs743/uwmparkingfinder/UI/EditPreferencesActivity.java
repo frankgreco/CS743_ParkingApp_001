@@ -1,5 +1,6 @@
 package com.cs743.uwmparkingfinder.UI;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -7,19 +8,22 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
 import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
+import com.cs743.uwmparkingfinder.HTTPManager.UTILITY;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.User;
 
 /**
  * Created by joannasandretto on 11/20/15.
  */
-public class EditPreferencesActivity extends AppCompatActivity {
+public class EditPreferencesActivity extends AppCompatActivity implements View.OnClickListener{
     /*************************  Class Static Variables  ***********************/
 
     /*************************  Class Member Variables  ***********************/
@@ -33,6 +37,7 @@ public class EditPreferencesActivity extends AppCompatActivity {
     private Switch prefOutsideSwitch_;          ///< Outside parking switch
     private Switch handicapSwitch_;             ///< Need handicap parking switch
     private Switch electricSwitch_;             ///< Need electric parking switch
+    private Button savePreferences;
     private final String TRUE="true";
     private final String FALSE="false";
     private final String FAIL="Failed";
@@ -40,8 +45,8 @@ public class EditPreferencesActivity extends AppCompatActivity {
     private final String GET="GET";
     private final String DIST_PRICE="dist_price";
     private final String COVERED="covered";
-    private final String DB_ADDRESS ="http://ec2-54-152-4-103.compute-1.amazonaws.com/scripts.php";
-    //TODO: where should we put the uri for the database?
+    //create a Progress Dialog to be used throughout Activity
+    private ProgressDialog p;
 
     @Override
     public void onCreate(Bundle savedInstance) {
@@ -59,6 +64,7 @@ public class EditPreferencesActivity extends AppCompatActivity {
         prefOutsideSwitch_=(Switch) findViewById(R.id.outsideSwitchEdit);
         handicapSwitch_=(Switch) findViewById(R.id.disableParkSwitchEdit);
         electricSwitch_=(Switch) findViewById(R.id.electricParkSwitchEdit);
+        savePreferences=(Button) findViewById(R.id.savePreferencesButton);
 
         //set the UI elements to the user's current settings
         User curUser= Session.getCurrentUser();
@@ -70,14 +76,55 @@ public class EditPreferencesActivity extends AppCompatActivity {
         emailAdress_.setText(curUser.getEmail());
         disORpriceBar_.setProgress(curUser.getDistORprice());
         prefOutsideSwitch_.setChecked(curUser.isCovered());
-        //TODO:Add electric and handicapped preferences
-        //handicapSwitch_.setChecked(curUser.getDisability());
-        //electricSwitch_.setChecked(curUser.getElectric());
+        handicapSwitch_.setChecked(curUser.isHandicap());
+        electricSwitch_.setChecked(curUser.isElectric());
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch(v.getId()){
+            case R.id.savePreferencesButton:
+                savePreferences(v);
+            break;
+        }
+    }
+
+    /**
+     * Check to see whether there is an internet connection or not.
+     * @return whether there is an internet connection
+     */
+    public boolean isOnline(){
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    private static ProgressDialog controlProgressDialog(boolean show, Context context, ProgressDialog p, String message){
+        if(show){
+            p = new ProgressDialog(context);
+            p.setMessage(message);
+            p.setIndeterminate(false);
+            p.setCancelable(false);
+            p.show();
+        }
+        else{
+            p.dismiss();
+        }
+
+        return p;
+    }
+
+
+    public ProgressDialog getP() {
+        return p;
+    }
+
+    public void setP(ProgressDialog p) {
+        this.p = p;
     }
 
     /**
      * Saves the user's preferences to the database.
-     * @param view
      */
     public void savePreferences(View view) {
         String uName=username_.getText().toString();
@@ -91,21 +138,32 @@ public class EditPreferencesActivity extends AppCompatActivity {
         boolean outside=prefOutsideSwitch_.isChecked();
         boolean electric=electricSwitch_.isChecked();
 
-        //TODO: finish Implementing save to database
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+        //Update server
+        if (isOnline()) {
             RequestPackage p=new RequestPackage();
             p.setMethod(GET);
-            p.setUri(DB_ADDRESS);
+            p.setParam("query","preferences");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
             p.setParam(DIST_PRICE, "" + costDist);
-            p.setParam(COVERED,outside?TRUE:FALSE);
-            //p.setParam("disabled",handicap?TRUE:FALSE);
-            //p.setParam("electric",electric?TRUE:FALSE);
-            //p.setParam("query","Whatever the query is named");
-            //new savePreferencesToDatabase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,p);
+            p.setParam(COVERED,outside?TRUE : FALSE);
+            p.setParam("disabled",handicap?TRUE:FALSE);
+            p.setParam("electric",electric?TRUE:FALSE);
+            new savePreferencesToDatabase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,p);
+        }else{
+            Toast.makeText(this, "you are not connected to the internet", Toast.LENGTH_LONG).show();
         }
-        //TODO: should we update the preferences for Session.currentUser as well as save to the database?
+        //Update local
+        User toUpdate = Session.getCurrentUser();
+        toUpdate.setUsername(uName);
+        toUpdate.setPassword(pWord);
+        toUpdate.setFirst(fName);
+        toUpdate.setLast(lName);
+        toUpdate.setPhone(pNum);
+        toUpdate.setEmail(eAddress);
+        toUpdate.setDistORprice(costDist);
+        toUpdate.setHandicap(handicap);
+        toUpdate.setCovered(outside);
+        toUpdate.setElectric(electric);
     }
 
     private class savePreferencesToDatabase extends AsyncTask<RequestPackage,String,String>{
@@ -119,9 +177,13 @@ public class EditPreferencesActivity extends AppCompatActivity {
         protected void onProgressUpdate(String... values) {}
 
         @Override
-        protected void onPostExecute(String s){}
+        protected void onPostExecute(String s){
+            EditPreferencesActivity.controlProgressDialog(false, null, EditPreferencesActivity.this.getP(), null);
+        }
 
         @Override
-        protected void onPreExecute(){}
+        protected void onPreExecute(){
+            EditPreferencesActivity.this.setP(EditPreferencesActivity.controlProgressDialog(true, EditPreferencesActivity.this, p, "Saving Information..."));
+        }
     }
 }
