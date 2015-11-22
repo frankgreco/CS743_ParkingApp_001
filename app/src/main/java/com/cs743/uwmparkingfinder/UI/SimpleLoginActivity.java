@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
 import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
+import com.cs743.uwmparkingfinder.HTTPManager.UTILITY;
 import com.cs743.uwmparkingfinder.Parser.JSONParser;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Building;
@@ -37,8 +38,6 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
 
     //create a Progress Dialog to be used throughout Activity
     private ProgressDialog p;
-    //URL
-    public static String uri = "http://ec2-54-152-4-103.compute-1.amazonaws.com/scripts.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +73,7 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
                     if (isOnline()) {
                         RequestPackage p = new RequestPackage();
                         p.setMethod("GET");
-                        p.setUri(SimpleLoginActivity.getUri());
+                        p.setUri(UTILITY.UBUNTU_SERVER_URL);
                         p.setParam("query", "user");
                         p.setParam("username", getUserName().getText().toString());
                         new WebserviceCallOne().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
@@ -119,10 +118,6 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         this.p = p;
     }
 
-    public static String getUri() {
-        return uri;
-    }
-
     public EditText getPassword() {
         return password;
     }
@@ -135,7 +130,7 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         if (isOnline()) {
             RequestPackage p = new RequestPackage();
             p.setMethod("GET");
-            p.setUri(SimpleLoginActivity.getUri());
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
             p.setParam("query", "buildings");
             new WebserviceCallTwo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
         } else {

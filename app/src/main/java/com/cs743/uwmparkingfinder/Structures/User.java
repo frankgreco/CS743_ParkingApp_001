@@ -12,6 +12,8 @@ public class User {
     private String phone;
     private String email;
     private boolean covered;
+    private boolean handicap;
+    private boolean electric;
     private int distORprice;
 
     public String getUsername() {
@@ -78,6 +80,22 @@ public class User {
         this.password = password;
     }
 
+    public boolean isHandicap() {
+        return handicap;
+    }
+
+    public void setHandicap(boolean handicap) {
+        this.handicap = handicap;
+    }
+
+    public boolean isElectric() {
+        return electric;
+    }
+
+    public void setElectric(boolean electric) {
+        this.electric = electric;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -88,6 +106,8 @@ public class User {
         sb.append("email: " + this.getEmail() + "\n");
         sb.append("covered: " + this.isCovered() + "\n");
         sb.append("Distance/Price (1-10 scale): " + this.getDistORprice() + "\n");
+        sb.append("Handicap: " + this.isHandicap() + "\n");
+        sb.append("Electric: " + this.isElectric() + "\n");
         return sb.toString();
     }
 }

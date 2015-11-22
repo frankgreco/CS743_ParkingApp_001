@@ -103,6 +103,8 @@ public class JSONParser {
                 user.setEmail(obj.getString("email"));
                 user.setPhone(obj.getString("phone"));
                 user.setCovered(obj.getBoolean("covered"));
+                user.setHandicap(obj.getBoolean("handicap"));
+                user.setElectric(obj.getBoolean("electric"));
                 user.setDistORprice(obj.getInt("dist_price"));
             }
         }catch (JSONException e){
