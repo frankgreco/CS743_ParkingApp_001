@@ -208,6 +208,15 @@
     <string name="LOT_REASON_NONE">No parking lot was found that met your criteria</string>
     <string name="LOT_REASON_COST">This was the cheapest parking lot found that met your criteria</string>
     <string name="LOT_REASON_DIST">This was the closest parking lot found that met your criteria</string>
+    <string name="LOT_REASON_NEXT">This was the next best parking lot that met your criteria</string>
+
+    <string name="LOT_REC_HEADER_NOTFOUND">Sorry, no available parking lot was found.</string>
+    <string name="LOT_REC_HEADER_FOUND">I recommend you park at</string>
+    <string name="LOT_REC_REASON_REASON">Reason:</string>
+    <string name="LOT_REC_HEADER_OUTOFCHOICES">Sorry, no other lots are available.</string>
+    <string name="LOT_REC_CONFIRM_REFINESEARCH">Would you like to refine your search?</string>
+    <string name="LOT_REC_CONFIRM_OK">Is this recommendation OK?</string>
+
     <string name="title_activity_simple_login">Sign in</string>
 
     <!-- Strings related to login -->

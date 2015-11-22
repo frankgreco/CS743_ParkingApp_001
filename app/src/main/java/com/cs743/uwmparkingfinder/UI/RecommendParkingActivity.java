@@ -12,8 +12,6 @@
 package com.cs743.uwmparkingfinder.UI;
 
 /****************************    Include Files    *****************************/
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
@@ -22,7 +20,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.cs743.uwmparkingfinder.Algorithm.Algorithm;
+import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+
+import java.util.List;
 
 /****************************  Class Definitions  *****************************/
 
@@ -47,6 +49,7 @@ public class RecommendParkingActivity extends AppCompatActivity
     private Button confirmButtonNo_;                ///< No button
 
     private SelectedParkingLot currLotSelection_;   ///< Current parking lot selection
+    private int selectedLotOption_;                 ///< Which lot in list was selected
 
     /*************************  Class Public Interface  ***********************/
 
@@ -76,12 +79,15 @@ public class RecommendParkingActivity extends AppCompatActivity
         Intent intent = getIntent();
         currLotSelection_ = (SelectedParkingLot)intent.getSerializableExtra(PREFERENCES_INTENT_DATA);
 
+        // Always start with 1st choice
+        selectedLotOption_ = 0;
+
         if (currLotSelection_ == null)
         {
             // No lot was found
 
             // Set apology notice
-            recommendationHeader_.setText("Sorry, no available parking lot was found.");
+            recommendationHeader_.setText(res.getString(R.string.LOT_REC_HEADER_NOTFOUND));
 
             // Set recommended parking lot text (blank)
             recommendationBody_.setText("");
@@ -93,26 +99,12 @@ public class RecommendParkingActivity extends AppCompatActivity
             reasonBody_.setText("");
 
             // Set confirmation label
-            confirmLabel_.setText("Would you like to try a new search?");
+            confirmLabel_.setText(res.getString(R.string.LOT_REC_CONFIRM_REFINESEARCH));
         }
         else
         {
             // At least 1 lot was found
-
-            // Set recommendation header text
-            recommendationHeader_.setText("I recommend you park at");
-
-            // Set recommended parking lot text
-            recommendationBody_.setText(currLotSelection_.getParkingLotName());
-
-            // Set reason header
-            reasonHeader_.setText("Reason:");
-
-            // Set reason for selecting parking lot
-            reasonBody_.setText(currLotSelection_.getReason());
-
-            // Set confirmation label
-            confirmLabel_.setText("Is this recommendation OK?");
+            displayRecommendedLot();
         }
     }
 
@@ -157,23 +149,71 @@ public class RecommendParkingActivity extends AppCompatActivity
         }
         else
         {
-            // TODO:  IMPLEMENT FUNCTION
-            // TODO:  algorithm should select next option (need to add list of lots to SelectedParkingLot)
-            AlertDialog ad = new AlertDialog.Builder(this).create();
-            ad.setCancelable(false);
-            ad.setMessage("No button tapped");
-            ad.setButton("OK", new DialogInterface.OnClickListener()
+            // Get next best option from algorithm
+            // Move on to next parking lot option
+            Resources res = getResources();
+            selectedLotOption_++;
+            List<Lot> lotOptions = Algorithm.getInstance().getLotList();
+            if (lotOptions.size() == selectedLotOption_)
             {
-                @Override
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    dialog.dismiss();
-                }
-            });
-            ad.show();
+                // Out of options!
+                // Set apology notice
+                recommendationHeader_.setText(res.getString(R.string.LOT_REC_HEADER_OUTOFCHOICES));
+
+                // Set recommended parking lot text (blank)
+                recommendationBody_.setText("");
+
+                // Set reason header (reason)
+                reasonHeader_.setText(res.getString(R.string.LOT_REASON_NONE));
+
+                // Set reason for selecting parking lot (blank)
+                reasonBody_.setText("");
+
+                // Set confirmation label
+                confirmLabel_.setText(res.getString(R.string.LOT_REC_CONFIRM_REFINESEARCH));
+
+                // Clear out the selected parking lot structure so that yes returns to preferences,
+                // and no takes user to main menu
+                currLotSelection_ = null;
+            }
+            else
+            {
+                // Provide next best suggestion
+                // Save name
+                Lot nextLot = lotOptions.get(selectedLotOption_);
+                currLotSelection_.setParkingLotName(nextLot.getName());
+
+                // Reason:  Next best choice
+                currLotSelection_.setReason(res.getString(R.string.LOT_REASON_NEXT));
+
+                // Refresh screen
+                displayRecommendedLot();
+            }
         }
     }
 
-
     /************************  Class Private Interface  ***********************/
+
+    /**
+     * Display a recommended parking lot
+     */
+    private void displayRecommendedLot()
+    {
+        Resources res = getResources();
+
+        // Set recommendation header text
+        recommendationHeader_.setText(res.getString(R.string.LOT_REC_HEADER_FOUND));
+
+        // Set recommended parking lot text
+        recommendationBody_.setText(currLotSelection_.getParkingLotName());
+
+        // Set reason header
+        reasonHeader_.setText(res.getString(R.string.LOT_REC_REASON_REASON));
+
+        // Set reason for selecting parking lot
+        reasonBody_.setText(currLotSelection_.getReason());
+
+        // Set confirmation label
+        confirmLabel_.setText(res.getString(R.string.LOT_REC_CONFIRM_OK));
+    }
 }

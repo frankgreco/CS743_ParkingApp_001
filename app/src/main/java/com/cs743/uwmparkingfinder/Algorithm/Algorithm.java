@@ -22,12 +22,58 @@ public class Algorithm {
     private double AVERAGE_PARKING_FEE_PER_HOUR = 1.50; // FIXME temporarily declared
     private double AVERAGE_DISTANCE = 100.00;           // FIXME temporarily declared
 
-    public List<Lot> getSortedLotList(String destination)
+    private List<Lot> sortedLotList_;                   ///< Sorted lots from algorithm
+
+    private static Algorithm sInstance_ = null;         ///< Class instance
+
+    /**
+     * Default (private) constructor
+     */
+    private Algorithm()
+    {
+        sortedLotList_ = new ArrayList<Lot>();
+    }
+
+    /**
+     * Retrieve the instance of the class.
+     *
+     * Creates a new instance if one has not yet been created.
+     *
+     * @return Singleton instance of the class
+     */
+    public static Algorithm getInstance()
+    {
+        if (sInstance_ == null)
+        {
+            sInstance_ = new Algorithm();
+        }
+
+        return sInstance_;
+    }
+
+    /**
+     * Returns the list of computed lots
+     *
+     * @return list of computed parking lots
+     */
+    public List<Lot> getLotList()
+    {
+        return sortedLotList_;
+    }
+
+    /**
+     * Determines a set of recommended parking lots.
+     *
+     * @param destination Destination building
+     *
+     * @return List of recommended parking lots
+     */
+    public List<Lot> computeRecommendedLots(String destination)
     {
         System.out.println("DEBUG: Algorithm: Entry");
 
         // Declare the resulting list
-        List<Lot> sortedLotList = new ArrayList<Lot>();
+        List<Lot> sortedLotList = sortedLotList_;
 
         // Get the current lot list
         List<Lot> currentLotList = Session.getCurrentLotList();

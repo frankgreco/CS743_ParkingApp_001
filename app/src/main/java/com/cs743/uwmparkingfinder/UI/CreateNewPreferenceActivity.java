@@ -184,8 +184,8 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
 
         // Compute recommended parking lot
         Resources res = getResources();
-        Algorithm algorithm = new Algorithm();
-        List<Lot> sortedLots = algorithm.getSortedLotList(preferences.getDestination());
+        Algorithm algorithm = Algorithm.getInstance();
+        List<Lot> sortedLots = algorithm.computeRecommendedLots(preferences.getDestination());
         if (sortedLots.size() == 0)
         {
             // No lots were found
