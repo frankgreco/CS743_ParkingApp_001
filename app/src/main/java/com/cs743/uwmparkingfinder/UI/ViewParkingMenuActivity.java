@@ -7,6 +7,7 @@
  * Revision  Date        Author             Summary of Changes Made
  * --------  ----------- ------------------ ------------------------------------
  * 1         04-Nov-2015 Eric Hitt          Original
+ * 2         22-Nov-2015 Eric Hitt          Use lot names from database
  ******************************************************************************/
 package com.cs743.uwmparkingfinder.UI;
 
@@ -19,6 +20,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.cs743.uwmparkingfinder.Session.Session;
+import com.cs743.uwmparkingfinder.Structures.Lot;
+
+import java.util.List;
 
 /****************************  Class Definitions  *****************************/
 
@@ -51,9 +57,15 @@ public class ViewParkingMenuActivity extends AppCompatActivity
         listView_ = (ListView)findViewById(R.id.lotNameList);
 
         // Create the list of parking lots list view - reuse TOC text view layout
-        Resources res = getResources();
-        ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_toclistview,
-                                                        res.getStringArray(R.array.LIST_OF_PARKING_LOTS));
+        List<Lot> lotList = Session.getCurrentLotList();
+        int numLots = lotList.size();
+        String[] lotNames = new String[numLots];
+        for (int i = 0; i < numLots; i++)
+        {
+            lotNames[i] = lotList.get(i).getName();
+        }
+
+        ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_toclistview, lotNames);
         listView_.setAdapter(adapter);
 
         // ListView item click listener (based on androidexample.com)

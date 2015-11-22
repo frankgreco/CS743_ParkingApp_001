@@ -46,10 +46,10 @@ public class Algorithm {
         }
 
         // Get the building user wants to go
-        Building building = new Building();
+        Building building = currentBuildings.get(0);
         for(Building each_building : currentBuildings)
         {
-            if(building.toString().equals(building.toString()))
+            if(building.toString().equals(each_building.toString()))
             {
                 building = each_building;
                 break;

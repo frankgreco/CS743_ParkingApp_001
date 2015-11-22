@@ -9,12 +9,11 @@
  * 1         08-Nov-2015 Eric Hitt          Original
  * 2         21-Nov-2015 Eric Hitt          Can pass null data to recommend
  *                                          parking activity
+ * 3         22-Nov-2015 Eric Hitt          Use building names from database
  ******************************************************************************/
 package com.cs743.uwmparkingfinder.UI;
 
 /****************************    Include Files    *****************************/
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +28,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.cs743.uwmparkingfinder.Algorithm.Algorithm;
+import com.cs743.uwmparkingfinder.Session.Session;
+import com.cs743.uwmparkingfinder.Structures.Building;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.ParkingPreferences;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
@@ -91,11 +92,17 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         findParkingButton_ = (Button)findViewById(R.id.findParkingButton);
 
         // Populate the Where To? spinner - reuse TOC text view layout
-        Resources res = getResources();
-        String[] buildingList = res.getStringArray(R.array.ALL_BUILDINGS);
+        List<Building> buildingList = Session.getCurrentBuildings();
+        int numBuildings = buildingList.size();
+        String[] buildingNames = new String[numBuildings];
+        for (int i = 0; i < numBuildings; i++)
+        {
+            buildingNames[i] = buildingList.get(i).getName();
+        }
+
         ArrayAdapter whereToAdapter = new ArrayAdapter<String>(this,
                                                                R.layout.activity_toclistview,
-                                                               buildingList);
+                                                               buildingNames);
 
         // Specify dropdown layout
         whereToAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
@@ -111,7 +118,6 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
      */
     public void findParking(View view)
     {
-
         //
         // Step 1:  Retrieve inputs from activity
         //
@@ -153,38 +159,6 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         Intent intent = new Intent(this, RecommendParkingActivity.class);
         intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, selectedLot);
         startActivity(intent);
-
-        /*
-        if (selectedLot == null)
-        {
-            // Failed to find parking lot!
-            AlertDialog ad = new AlertDialog.Builder(this).create();
-            ad.setCancelable(false);
-            ad.setMessage("Sorry, no parking lots are available that meet your requirements at " +
-                          "this time.  Please try modifying your search.");
-            ad.setButton("OK", new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    dialog.dismiss();
-                }
-            });
-            ad.show();
-        }
-        else
-        {
-            // Parking lot detected, suggest that lot to the user
-            System.out.println("I recommend you park at " + selectedLot.getParkingLotName() +
-                    " because " + selectedLot.getReason());
-
-            // Prepare activity showing selected parking lot and reason (pass selectedLot data)
-            // Pass preference data to the recommend parking activity and start activity
-            Intent intent = new Intent(this, RecommendParkingActivity.class);
-            intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, selectedLot);
-            startActivity(intent);
-        }
-        */
     }
 
     /************************  Class Private Interface  ***********************/

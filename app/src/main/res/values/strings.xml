@@ -39,6 +39,7 @@
     </string-array>
 
     <!-- Available Buildings -->
+    <!--
     <string name="BUILD_AH">AH:  Alumni House</string>
     <string name="BUILD_AUP">AUP:  Architecture and Urban Planning</string>
     <string name="BUILD_AC">AC:  Art Center</string>
@@ -129,14 +130,17 @@
         <item>@string/BUILD_VOG</item>
         <item>@string/BUILD_ZEL</item>
     </string-array>
+    -->
 
     <!-- Optimization strategies -->
+    <!--
     <string name="optCost">Cost</string>
     <string name="optDist">Distance</string>
     <string-array name="ALL_OPTIMIZATIONS">
         <item>@string/optCost</item>
         <item>@string/optDist</item>
     </string-array>
+    -->
 
     <!-- Available parking lots -->
     <!-- Lot numbers from http://www4.uwm.edu/parking/upload/1516-Campus-Parking-Rate-Info-150928.pdf -->
@@ -168,6 +172,7 @@
     <string name="LOT_59035">NW Quad Near NQ Quad G</string>
     <string name="LOT_59036">NW Quad Near NW Quad E</string>
 
+    <!--
     <string-array name="LIST_OF_PARKING_LOTS">
         <item>@string/LOT_59001</item>
         <item>@string/LOT_59002</item>
@@ -197,6 +202,7 @@
         <item>@string/LOT_59035</item>
         <item>@string/LOT_59036</item>
     </string-array>
+    -->
 
     <!-- Reasons for why a parking lot was selected -->
     <string name="LOT_REASON_NONE">No parking lot was found that met your criteria</string>
