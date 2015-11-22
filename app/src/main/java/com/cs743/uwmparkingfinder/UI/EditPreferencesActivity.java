@@ -1,5 +1,6 @@
 package com.cs743.uwmparkingfinder.UI;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -7,6 +8,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -61,6 +63,8 @@ public class EditPreferencesActivity extends AppCompatActivity implements View.O
         phone_=(EditText) findViewById(R.id.phoneTextBox);
         emailAdress_=(EditText) findViewById(R.id.emailEditTextBox);
         disORpriceBar_=(SeekBar) findViewById(R.id.costDistBarEdit);
+        disORpriceBar_.incrementProgressBy(1);
+        disORpriceBar_.setMax(10);
         prefOutsideSwitch_=(Switch) findViewById(R.id.outsideSwitchEdit);
         handicapSwitch_=(Switch) findViewById(R.id.disableParkSwitchEdit);
         electricSwitch_=(Switch) findViewById(R.id.electricParkSwitchEdit);
@@ -69,7 +73,7 @@ public class EditPreferencesActivity extends AppCompatActivity implements View.O
         //set the UI elements to the user's current settings
         User curUser= Session.getCurrentUser();
         username_.setText(curUser.getUsername());
-        password_.setText(curUser.getEmail());
+        password_.setText(curUser.getPassword());
         firstname_.setText(curUser.getFirst());
         lastname_.setText(curUser.getLast());
         phone_.setText(curUser.getPhone());
@@ -123,47 +127,100 @@ public class EditPreferencesActivity extends AppCompatActivity implements View.O
         this.p = p;
     }
 
+    public boolean validateEntries(){
+        if(username_.getText().toString().equals("") || containsSpace(username_.getText().toString())) return false;
+        if(password_.getText().toString().equals("") || containsSpace(password_.getText().toString())) return false;
+        if(firstname_.getText().toString().equals("") || containsSpace(firstname_.getText().toString())) return false;
+        if(lastname_.getText().toString().equals("") || containsSpace(lastname_.getText().toString())) return false;
+        if(!validatePhoneNumber(phone_.getText().toString())) return false;
+        if(!isValidEmailAddress(emailAdress_.getText().toString())) return false;
+        return true;
+    }
+
+    private static boolean validatePhoneNumber(String phoneNo) {
+        //validate phone numbers of format "1234567890"
+        if (phoneNo.matches("\\d{10}")) return true;
+            //validating phone number with -, . or spaces
+        else if(phoneNo.matches("\\d{3}[-\\.\\s]\\d{3}[-\\.\\s]\\d{4}")) return true;
+            //validating phone number where area code is in braces ()
+        else if(phoneNo.matches("\\(\\d{3}\\)-\\d{3}-\\d{4}")) return true;
+            //return false if nothing matches the input
+        else return false;
+
+    }
+
+    private boolean isValidEmailAddress(String email) {
+        String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(ePattern);
+        java.util.regex.Matcher m = p.matcher(email);
+        return m.matches();
+    }
+
+    private boolean containsSpace(String input){
+        for(int i = 0; i < input.length(); ++i){
+            char c = input.charAt(i);
+            if(c == ' ') return true;
+        }
+        return false;
+    }
+
     /**
      * Saves the user's preferences to the database.
      */
     public void savePreferences(View view) {
-        String uName=username_.getText().toString();
-        String pWord=password_.getText().toString();
-        String fName=firstname_.getText().toString();
-        String lName=lastname_.getText().toString();
-        String pNum=phone_.getText().toString();
-        String eAddress=emailAdress_.getText().toString();
-        int costDist=disORpriceBar_.getProgress();
-        boolean handicap=handicapSwitch_.isChecked();
-        boolean outside=prefOutsideSwitch_.isChecked();
-        boolean electric=electricSwitch_.isChecked();
 
-        //Update server
-        if (isOnline()) {
-            RequestPackage p=new RequestPackage();
-            p.setMethod(GET);
-            p.setParam("query","preferences");
-            p.setUri(UTILITY.UBUNTU_SERVER_URL);
-            p.setParam(DIST_PRICE, "" + costDist);
-            p.setParam(COVERED,outside?TRUE : FALSE);
-            p.setParam("disabled",handicap?TRUE:FALSE);
-            p.setParam("electric",electric?TRUE:FALSE);
-            new savePreferencesToDatabase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,p);
+        if(!validateEntries()){
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(EditPreferencesActivity.this);
+            alertDialogBuilder.setMessage("Some of your entries are incorrect");
+            alertDialogBuilder.setPositiveButton("Got it", null);
+            alertDialogBuilder.create().show();
         }else{
-            Toast.makeText(this, "you are not connected to the internet", Toast.LENGTH_LONG).show();
+            String uName=username_.getText().toString();
+            String pWord=password_.getText().toString();
+            String fName=firstname_.getText().toString();
+            String lName=lastname_.getText().toString();
+            String pNum=phone_.getText().toString();
+            String eAddress=emailAdress_.getText().toString();
+            int costDist=disORpriceBar_.getProgress();
+            boolean handicap=handicapSwitch_.isChecked();
+            boolean outside=prefOutsideSwitch_.isChecked();
+            boolean electric=electricSwitch_.isChecked();
+
+            //Update server
+            if (isOnline()) {
+                RequestPackage p = new RequestPackage();
+                p.setMethod(GET);
+                p.setUri(UTILITY.UBUNTU_SERVER_URL);
+                p.setParam("query", "preferences");
+                p.setParam("usernameOld", Session.getCurrentUser().getUsername());
+                p.setParam("usernameNew", uName);
+                p.setParam("password", pWord);
+                p.setParam("first", fName);
+                p.setParam("last", lName);
+                p.setParam("phone", pNum);
+                p.setParam("email", eAddress);
+                p.setParam(DIST_PRICE, String.valueOf(costDist));
+                p.setParam(COVERED,outside?TRUE : FALSE);
+                p.setParam("handicap", handicap ? TRUE : FALSE);
+                p.setParam("electric",electric?TRUE:FALSE);
+                Log.d("url: ", p.getEncodedParams());
+                new savePreferencesToDatabase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+            }else{
+                Toast.makeText(this, "you are not connected to the internet", Toast.LENGTH_LONG).show();
+            }
+            //Update local
+            User toUpdate = Session.getCurrentUser();
+            toUpdate.setUsername(uName);
+            toUpdate.setPassword(pWord);
+            toUpdate.setFirst(fName);
+            toUpdate.setLast(lName);
+            toUpdate.setPhone(pNum);
+            toUpdate.setEmail(eAddress);
+            toUpdate.setDistORprice(costDist);
+            toUpdate.setHandicap(handicap);
+            toUpdate.setCovered(outside);
+            toUpdate.setElectric(electric);
         }
-        //Update local
-        User toUpdate = Session.getCurrentUser();
-        toUpdate.setUsername(uName);
-        toUpdate.setPassword(pWord);
-        toUpdate.setFirst(fName);
-        toUpdate.setLast(lName);
-        toUpdate.setPhone(pNum);
-        toUpdate.setEmail(eAddress);
-        toUpdate.setDistORprice(costDist);
-        toUpdate.setHandicap(handicap);
-        toUpdate.setCovered(outside);
-        toUpdate.setElectric(electric);
     }
 
     private class savePreferencesToDatabase extends AsyncTask<RequestPackage,String,String>{
@@ -182,7 +239,7 @@ public class EditPreferencesActivity extends AppCompatActivity implements View.O
         }
 
         @Override
-        protected void onPreExecute(){
+        protected void onPreExecute() {
             EditPreferencesActivity.this.setP(EditPreferencesActivity.controlProgressDialog(true, EditPreferencesActivity.this, p, "Saving Information..."));
         }
     }
