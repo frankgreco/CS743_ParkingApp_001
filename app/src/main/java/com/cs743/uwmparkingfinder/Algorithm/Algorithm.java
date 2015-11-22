@@ -16,7 +16,7 @@ import java.util.TreeMap;
 
 /**
  * Created by Masaki Ikuta on 11/20/2015.
- * Updated by masaki Ikuta on 11/22/2015 5:04PM.
+ * Updated by masaki Ikuta on 11/22/2015 5:40PM.
  */
 public class Algorithm {
 
@@ -78,17 +78,19 @@ public class Algorithm {
 
         // Get the current lot list
         List<Lot> currentLotList = Session.getCurrentLotList();
+        System.out.println("Algorithm: currentLotList = " + currentLotList.size());
         if(currentLotList.size() == 0)
         {
-            System.out.println("DEBUG: Algorithm: currentLotList is zero.");
+            System.out.println("Algorithm: currentLotList is zero.");
             return sortedLotList;
         }
 
         // Get the building list
-        List<Building> currentBuildings = Session.getCurrentBuildings(); //FIXME Need to get the current building
+        List<Building> currentBuildings = Session.getCurrentBuildings();
+        System.out.println("Algorithm: currentBuildings = " + currentBuildings.size());
         if(currentBuildings.size() == 0)
         {
-            System.out.println("DEBUG: Algorithm: currentBuildings is zero.");
+            System.out.println("Algorithm: currentBuildings is zero.");
             return sortedLotList;
         }
 
@@ -105,13 +107,14 @@ public class Algorithm {
 
         if(building.getName().equals(""))
         {
-            System.out.println("DEBUG: Algorithm: the destination cannot be found.");
+            System.out.println("Algorithm: the destination cannot be found.");
             return sortedLotList;
         }
 
         TreeMap<Double, Lot> tmap = new TreeMap<Double, Lot>();
         //TODO: distORprice preference is in both parkingPreferences class and in the User class, so which should be used?
         int distORprice = Session.getCurrentUser().getDistORprice();
+        System.out.println("Algorithm: distORprice = " + distORprice);
 
         //
         // Compute x_prime for each parking lot
@@ -120,9 +123,10 @@ public class Algorithm {
         {
             double x = getNormalizedDistance(building, lot);
             double y = getNormalizedParkingCost(lot);
-            double theta = (distORprice - 1) * 10;
-            double x_prime = x * Math.cos(theta) + y * Math.sin(theta);
+            double theta = (double)((distORprice - 1) * 10);
+            double x_prime = x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta));
 
+            System.out.println("Algorithm: lot_name = " + lot.getName() + ", x = " + x + ", y = " + y + ", theta = " + theta + ", x_prime = " + x_prime);
             tmap.put(x_prime, lot);
         }
 
@@ -131,8 +135,7 @@ public class Algorithm {
         while(iterator.hasNext())
         {
             Map.Entry mentry = (Map.Entry)iterator.next();
-            System.out.print("DEBUG: Algorithm: key is: " + mentry.getKey() + " & Value is: ");
-            System.out.print(mentry.getValue());
+            System.out.print("Algorithm: key is: " + mentry.getKey() + " & Value is: " + mentry.getValue());
         }
 
         set = tmap.entrySet();
@@ -150,7 +153,6 @@ public class Algorithm {
     private double getNormalizedParkingCost(Lot lot)
     {
         // AVERAGE_PARKING_FEE_PER_HOUR: the average parking expense per hour in the campus which is probably $1.50. This should be pre-determined value for Recommender system
-
         return lot.getRate() / AVERAGE_PARKING_FEE_PER_HOUR;
     }
 
