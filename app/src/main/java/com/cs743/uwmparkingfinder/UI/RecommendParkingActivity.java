@@ -7,6 +7,7 @@
  * Revision  Date        Author             Summary of Changes Made
  * --------  ----------- ------------------ ------------------------------------
  * 1         12-Nov-2015 Eric Hitt          Original
+ * 2         21-Nov-2015 Eric Hitt          Improved user response handling
  ******************************************************************************/
 package com.cs743.uwmparkingfinder.UI;
 
@@ -14,6 +15,7 @@ package com.cs743.uwmparkingfinder.UI;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -68,24 +70,50 @@ public class RecommendParkingActivity extends AppCompatActivity
         confirmButtonYes_ = (Button)findViewById(R.id.parkingRecommendationYesButton);
         confirmButtonNo_ = (Button)findViewById(R.id.parkingRecommendationNoButton);
 
+        Resources res = getResources();
+
         // Retrieve intent
         Intent intent = getIntent();
         currLotSelection_ = (SelectedParkingLot)intent.getSerializableExtra(PREFERENCES_INTENT_DATA);
 
-        // Set recommendation header text
-        recommendationHeader_.setText("I recommend you park at");
+        if (currLotSelection_ == null)
+        {
+            // No lot was found
 
-        // Set recommended parking lot text
-        recommendationBody_.setText(currLotSelection_.getParkingLotName());
+            // Set apology notice
+            recommendationHeader_.setText("Sorry, no available parking lot was found.");
 
-        // Set reason header
-        reasonHeader_.setText("Reason:");
+            // Set recommended parking lot text (blank)
+            recommendationBody_.setText("");
 
-        // Set reason for selecting parking lot
-        reasonBody_.setText(currLotSelection_.getReason());
+            // Set reason header (reason)
+            reasonHeader_.setText(res.getString(R.string.LOT_REASON_NONE));
 
-        // Set confirmation label
-        confirmLabel_.setText("Is this recommendation OK?");
+            // Set reason for selecting parking lot (blank)
+            reasonBody_.setText("");
+
+            // Set confirmation label
+            confirmLabel_.setText("Would you like to try a new search?");
+        }
+        else
+        {
+            // At least 1 lot was found
+
+            // Set recommendation header text
+            recommendationHeader_.setText("I recommend you park at");
+
+            // Set recommended parking lot text
+            recommendationBody_.setText(currLotSelection_.getParkingLotName());
+
+            // Set reason header
+            reasonHeader_.setText("Reason:");
+
+            // Set reason for selecting parking lot
+            reasonBody_.setText(currLotSelection_.getReason());
+
+            // Set confirmation label
+            confirmLabel_.setText("Is this recommendation OK?");
+        }
     }
 
     /**
@@ -95,12 +123,21 @@ public class RecommendParkingActivity extends AppCompatActivity
      */
     public void recommendParkingYes(View view)
     {
-        // Go to the monitor parking screen
-        // Prepare activity showing selected parking lot and reason (pass selectedLot data)
-        // Pass preference data to the recommend parking activity and start activity
-        Intent intent = new Intent(this, MonitorParkingLotActivity.class);
-        intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, currLotSelection_);
-        startActivity(intent);
+        // Behavior dependent on whether or not a recommendation was made
+        if (currLotSelection_ == null)
+        {
+            // Return to preference activity (previous activity)
+            finish();
+        }
+        else
+        {
+            // Go to the monitor parking screen
+            // Prepare activity showing selected parking lot and reason (pass selectedLot data)
+            // Pass preference data to the recommend parking activity and start activity
+            Intent intent = new Intent(this, MonitorParkingLotActivity.class);
+            intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, currLotSelection_);
+            startActivity(intent);
+        }
     }
 
     /**
@@ -110,19 +147,31 @@ public class RecommendParkingActivity extends AppCompatActivity
      */
     public void recommendParkingNo(View view)
     {
-        // TODO:  IMPLEMENT FUNCTION
-        AlertDialog ad = new AlertDialog.Builder(this).create();
-        ad.setCancelable(false);
-        ad.setMessage("No button tapped");
-        ad.setButton("OK", new DialogInterface.OnClickListener()
+        // Behavior dependent on whether or not a recommendation was made
+        if (currLotSelection_ == null)
         {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
+            // Return to main menu
+            // TODO:  Should I be creating a new Intent?
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        }
+        else
+        {
+            // TODO:  IMPLEMENT FUNCTION
+            // TODO:  algorithm should select next option (need to add list of lots to SelectedParkingLot)
+            AlertDialog ad = new AlertDialog.Builder(this).create();
+            ad.setCancelable(false);
+            ad.setMessage("No button tapped");
+            ad.setButton("OK", new DialogInterface.OnClickListener()
             {
-                dialog.dismiss();
-            }
-        });
-        ad.show();
+                @Override
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    dialog.dismiss();
+                }
+            });
+            ad.show();
+        }
     }
 
 

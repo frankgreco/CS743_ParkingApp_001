@@ -7,6 +7,8 @@
  * Revision  Date        Author             Summary of Changes Made
  * --------  ----------- ------------------ ------------------------------------
  * 1         08-Nov-2015 Eric Hitt          Original
+ * 2         21-Nov-2015 Eric Hitt          Can pass null data to recommend
+ *                                          parking activity
  ******************************************************************************/
 package com.cs743.uwmparkingfinder.UI;
 
@@ -51,7 +53,6 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
     private TextView prefLabelCloser_;          ///< Closer parking preferences label
     private TextView prefLabelCheaper_;         ///< Cheaper parking preferences label
     private SeekBar disORpriceBar_;             ///< Cost or Distance Preference: 0=prefer closer / 100=prefer cheaper
-    //private Spinner prefSpinner_;               ///< Parking preferences spinner
     private TextView prefOutsideLabel_;         ///< Outside preference label
     private Switch prefOutsideSwitch_;          ///< Outside parking switch
     private TextView handicapLabel_;            ///< Need handicap parking label
@@ -81,7 +82,6 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         prefLabelCloser_ = (TextView)findViewById(R.id.prefLabelCloser);
         prefLabelCheaper_ = (TextView) findViewById(R.id.prefLabelCheaper);
         disORpriceBar_ = (SeekBar) findViewById(R.id.costDistBar);
-        //prefSpinner_ = (Spinner)findViewById(R.id.prefSpinner);
         prefOutsideLabel_ = (TextView)findViewById(R.id.badWeatherLabel);
         prefOutsideSwitch_= (Switch)findViewById(R.id.outsideSwitch);
         handicapLabel_ = (TextView)findViewById(R.id.disableParkLabel);
@@ -102,12 +102,6 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
 
         // Apply adapter to spinner
         whereToSpinner_.setAdapter(whereToAdapter);
-
-        // Populate the preference spinner - reuse TOC text view layout
-        /*String[] optList = res.getStringArray(R.array.ALL_OPTIMIZATIONS);
-        ArrayAdapter optAdapter = new ArrayAdapter<String>(this, R.layout.activity_toclistview, optList);
-        optAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-        prefSpinner_.setAdapter(optAdapter);*/
     }
 
     /**
@@ -130,7 +124,6 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         int destMin = whatTimePicker_.getMinute();
 
         // Read optimization preference value
-        //String optimization = prefSpinner_.getSelectedItem().toString();
         int disORprice = disORpriceBar_.getProgress();
 
         // Read outdoor preference
@@ -143,13 +136,6 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         boolean electricParkNeeded = electricSwitch_.isChecked();
 
         // Package up preferences
-        Resources res = getResources();
-        /*ParkingPreferences.OPT_STRATEGY optStrategy = ParkingPreferences.OPT_STRATEGY.OPT_COST;
-        if (optimization.equalsIgnoreCase(res.getString(R.string.optDist)))
-        {
-            optStrategy = ParkingPreferences.OPT_STRATEGY.OPT_DIST;
-        }*/
-
         ParkingPreferences preferences = new ParkingPreferences(destination, destHour, destMin,
                                                                 disORprice, outsideAllowed,
                                                                 disableParkNeeded,
@@ -160,12 +146,22 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         //
         SelectedParkingLot selectedLot = findParkingLot(preferences);
 
+        // At this point, it is possible that selectedLot is null.  This will be checked as
+        // part of the RecommendParkingActivity.
+        // Prepare activity showing selected parking lot and reason (pass selectedLot data)
+        // Pass preference data to the recommend parking activity and start activity
+        Intent intent = new Intent(this, RecommendParkingActivity.class);
+        intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, selectedLot);
+        startActivity(intent);
+
+        /*
         if (selectedLot == null)
         {
             // Failed to find parking lot!
             AlertDialog ad = new AlertDialog.Builder(this).create();
             ad.setCancelable(false);
-            ad.setMessage("Sorry, no parking lots are available at this time.");
+            ad.setMessage("Sorry, no parking lots are available that meet your requirements at " +
+                          "this time.  Please try modifying your search.");
             ad.setButton("OK", new DialogInterface.OnClickListener()
             {
                 @Override
@@ -188,6 +184,7 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
             intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, selectedLot);
             startActivity(intent);
         }
+        */
     }
 
     /************************  Class Private Interface  ***********************/
@@ -197,7 +194,7 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
      *
      * @param preferences Parking lot preferences
      *
-     * @return Selected parking lot, or null if operation failed
+     * @return Selected parking lot, or null if operation failed (or no lots found)
      */
     private SelectedParkingLot findParkingLot(ParkingPreferences preferences)
     {
@@ -211,15 +208,24 @@ public class CreateNewPreferenceActivity extends AppCompatActivity
         System.out.println("  Handicap Needed:  " + preferences.getHandicapRequired());
         System.out.println("  Electric Needed:  " + preferences.getElectricRequired());
 
-        // TODO:  IMPLEMENT FUNCTION - requires backend algorithm
+        // Compute recommended parking lot
         Resources res = getResources();
         Algorithm algorithm = new Algorithm();
-        List<Lot> sortedLots=algorithm.getSortedLotList(preferences.getDestination());
-        if (sortedLots.size()==0) {
-            return new SelectedParkingLot("Not found", "System was not able to find a parking lot.");
-        } else {
-            String reason=disORpriceBar_.getProgress()>50? "Cheapest":"Closest";
-            return new SelectedParkingLot(sortedLots.get(0).getName(),"This was the "+reason+" parking lot found that best met your criteria:");
+        List<Lot> sortedLots = algorithm.getSortedLotList(preferences.getDestination());
+        if (sortedLots.size() == 0)
+        {
+            // No lots were found
+            return null;
+        }
+        else
+        {
+            String reason = res.getString(R.string.LOT_REASON_DIST);
+            if (disORpriceBar_.getProgress() > 50)
+            {
+                reason = res.getString(R.string.LOT_REASON_COST);
+            }
+
+            return new SelectedParkingLot(sortedLots.get(0).getName(), reason);
         }
     }
 }

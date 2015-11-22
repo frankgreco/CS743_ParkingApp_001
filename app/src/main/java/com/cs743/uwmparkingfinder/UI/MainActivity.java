@@ -105,7 +105,6 @@ public class MainActivity extends AppCompatActivity
      */
     private void processFindParkingSelection()
     {
-        // TODO:  IMPLEMENT FUNCTION
         System.out.println("Processing find parking selection");
 
         // TODO:  Determine if should create a new preference or suggest based on past data
@@ -133,10 +132,9 @@ public class MainActivity extends AppCompatActivity
      */
     private void processEditPreferencesSelection()
     {
-        // TODO:  IMPLEMENT FUNCTION
         System.out.println("Processing edit preferences selection");
 
-        // For now, display the feature not available page
+        // Go to the edit preferences page
         Intent intent = new Intent(this, EditPreferencesActivity.class);
         startActivity(intent);
     }

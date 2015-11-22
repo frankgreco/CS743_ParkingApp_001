@@ -34,15 +34,6 @@ public class SelectedParkingLot implements Serializable
     /*************************  Class Public Interface  ***********************/
 
     /**
-     * Default constructor
-     */
-    public SelectedParkingLot()
-    {
-        parkingLotName_ = null;
-        reason_ = null;
-    }
-
-    /**
      * Constructor
      * @param name Parking lot name
      * @param reason Reason for selecting parking lot
@@ -106,4 +97,13 @@ public class SelectedParkingLot implements Serializable
     }
 
     /************************  Class Private Interface  ***********************/
+
+    /**
+     * Default constructor
+     */
+    private SelectedParkingLot()
+    {
+        parkingLotName_ = null;
+        reason_ = null;
+    }
 }
