@@ -19,7 +19,7 @@ import java.util.TreeMap;
  */
 public class Algorithm {
 
-    // Test comment
+    // Test comment 11/22/2015 4:17PM
     private double AVERAGE_PARKING_FEE_PER_HOUR = 1.50; // FIXME temporarily declared
     private double AVERAGE_DISTANCE = 100.00;           // FIXME temporarily declared
 
