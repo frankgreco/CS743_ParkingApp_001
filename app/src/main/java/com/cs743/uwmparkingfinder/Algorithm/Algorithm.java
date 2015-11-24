@@ -17,7 +17,7 @@ import java.util.TreeMap;
 
 /**
  * Created by Masaki Ikuta on 11/20/2015.
- * Updated by masaki Ikuta on 11/22/2015 5:40PM.
+ * Updated by masaki Ikuta on 11/23/2015 8:05PM.
  */
 public class Algorithm {
 
