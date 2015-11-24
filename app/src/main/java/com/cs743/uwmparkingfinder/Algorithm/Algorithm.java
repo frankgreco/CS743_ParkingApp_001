@@ -6,6 +6,7 @@ import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Building;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.ParkingPreferences;
+import com.cs743.uwmparkingfinder.Structures.Space;
 import com.cs743.uwmparkingfinder.Structures.User;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.TreeMap;
 
 /**
  * Created by Masaki Ikuta on 11/20/2015.
- * Updated by masaki Ikuta on 11/23/2015 9:05PM.
+ * Updated by masaki Ikuta on 11/24/2015 9:06AM.
  */
 public class Algorithm {
 
@@ -131,12 +132,36 @@ public class Algorithm {
             double theta = (double)((distORprice - 1) * 10);
             double x_prime = x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta));
 
+            // Check space availability
+            List<Space> spaces = lot.getSpaces();
+            boolean isCovered = lot.isCovered();
+            boolean isHandicapAvailable = false;
+            boolean isElectricAvailable = false;
+            for(Space each_space : spaces) {
+                //System.out.println("Algorithm:        lot = " + lot.getName() + ", space = " + each_space.getNumber() + ", isAvailable = " + each_space.isAvailable() + ", isHandicap = " + each_space.isHandicap() + ", isElectric = " + each_space.isElectric());
+
+                if(each_space.isAvailable() == true) {
+
+                    // Check if it should be handicapped
+                    if (isHandicapAvailable == false && each_space.isHandicap() == true)
+                    {
+                        isHandicapAvailable = true;
+                    }
+
+                    // Check if it's an electric car or not
+                    if (isElectricAvailable == false && each_space.isElectric() == true)
+                    {
+                        isElectricAvailable = true;
+                    }
+                }
+            }
+
             System.out.println("Algorithm:    lot_name = " + lot.getName() + ", distance = " + computeDistanceInMeter(building, lot) + ", fee = " + lot.getRate()
-                    + ", x = " + x + ", y = " + y + ", theta = " + theta + ", x_prime = " + x_prime + ", isCovered() = " + lot.isCovered());
+                    + ", x = " + x + ", y = " + y + ", theta = " + theta + ", x_prime = " + x_prime + ", isCovered() = " + lot.isCovered() + ", isHandicap = " + isHandicapAvailable + ", isElectric = " + isElectricAvailable);
 
             if(allowOutside == false && lot.isCovered() == false) { continue; }
-            // if(preferences.getHandicapRequired() == true && lot.isHandicapAvailable() == false ) { continue; }  // TODO Still need to be implemented
-            // if(preferences.getElectricRequired() == true && lot.isElectricAvailable() == false ) { continue; } // TODO Still need to be implemented
+            if (preferences.getHandicapRequired() == true && isHandicapAvailable == false) { continue; }
+            if(preferences.getElectricRequired() == true && isElectricAvailable == false) { continue; }
 
             tmap.put(x_prime, lot);
         }
@@ -171,7 +196,7 @@ public class Algorithm {
         Location lot_location = lot.getLocation();
         float[] result = new float[1];
 
-        //System.out.println("DEBUG: Algorithm: getActualDistance: " + building_location.getLatitude() + ", " + building_location.getLongitude() + ", " + lot_location.getLatitude() + ", " + lot_location.getLongitude());
+        //System.out.println("Algorithm:         getActualDistance: " + building_location.getLatitude() + ", " + building_location.getLongitude() + ", " + lot_location.getLatitude() + ", " + lot_location.getLongitude());
         Location.distanceBetween(building_location.getLatitude(), building_location.getLongitude(), lot_location.getLatitude(), lot_location.getLongitude(), result);
 
         return result[0];
