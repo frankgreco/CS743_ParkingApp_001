@@ -107,9 +107,19 @@ public class Algorithm {
         System.out.println("Algorithm:    destination = " + building.getName());
 
         // Get user preferences
+
+        //Since the backend and the EditPreferences Class populates the User class, that class should be used
+        //to get the below values as opposed to the Parking preferences class.
+        //
+        //See my commented suggestions
+        //
+        //instead of preferences.getOptimization() use Session.getCurrentUser().getDistORprice();
         int distORprice = (int)Math.floor((double)preferences.getOptimization() / 100.0 * 9.0); // distORprice ranges from 0 to 9
+        //instead of preferences.getOutsideParking() use Session.getCurrentUser().isCovered();
         boolean allowOutside = preferences.getOutsideParking();
+        //instead of preferences.getHandicapRequired() use Session.getCurrentUser().isHandicap();
         boolean handicapReq = preferences.getHandicapRequired();
+        //instead of preferences.getElectricRequired() use Session.getCurrentUser().isElectric();
         boolean electricReq = preferences.getElectricRequired();
         System.out.println("Algorithm:    distORprice = " + distORprice + ", allowOutside = " + allowOutside + ", handicapReq = " + handicapReq + ", electricReq = " + electricReq);
 
