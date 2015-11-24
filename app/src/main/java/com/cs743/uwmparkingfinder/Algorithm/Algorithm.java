@@ -5,6 +5,7 @@ import android.location.Location;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Building;
 import com.cs743.uwmparkingfinder.Structures.Lot;
+import com.cs743.uwmparkingfinder.Structures.ParkingPreferences;
 import com.cs743.uwmparkingfinder.Structures.User;
 
 import java.util.ArrayList;
@@ -20,8 +21,15 @@ import java.util.TreeMap;
  */
 public class Algorithm {
 
-    private double AVERAGE_PARKING_FEE_PER_HOUR = 1.50; // FIXME temporarily declared
-    private double AVERAGE_DISTANCE = 100.00;           // FIXME temporarily declared
+    // The average parking expense per hour in the campus.
+    // At UWM, the parking fee varies from $1.00 to $2.00.
+    // This should be pre-determined value for Recommender system
+    private static double AVERAGE_PARKING_FEE_PER_HOUR = 1.50;
+
+    // The average walking distance from a parking lot to a destination.
+    // This should be pre-determined value for Recommender system
+    // Note that it is about 500 meters from North Quadrant to EMS building.
+    private static double AVERAGE_DISTANCE_LOT_TO_DEST = 500.00;
 
     private List<Lot> sortedLotList_;                   ///< Sorted lots from algorithm
 
@@ -65,110 +73,98 @@ public class Algorithm {
     /**
      * Determines a set of recommended parking lots.
      *
-     * @param destination Destination building
+     * @param preferences user preferences
      *
      * @return List of recommended parking lots
      */
-    public List<Lot> computeRecommendedLots(String destination)
+    public List<Lot> computeRecommendedLots(ParkingPreferences preferences)
     {
-        System.out.println("DEBUG: Algorithm: Entry");
+        System.out.println("Algorithm: Entry");
 
         // Declare the resulting list
         List<Lot> sortedLotList = sortedLotList_;
 
         // Get the current lot list
         List<Lot> currentLotList = Session.getCurrentLotList();
-        System.out.println("Algorithm: currentLotList = " + currentLotList.size());
-        if(currentLotList.size() == 0)
-        {
-            System.out.println("Algorithm: currentLotList is zero.");
-            return sortedLotList;
-        }
+        System.out.println("Algorithm:    currentLotList = " + currentLotList.size());
 
         // Get the building list
         List<Building> currentBuildings = Session.getCurrentBuildings();
-        System.out.println("Algorithm: currentBuildings = " + currentBuildings.size());
-        if(currentBuildings.size() == 0)
-        {
-            System.out.println("Algorithm: currentBuildings is zero.");
-            return sortedLotList;
-        }
+        System.out.println("Algorithm:    currentBuildings = " + currentBuildings.size());
 
         // Get the building user wants to go
         Building building = currentBuildings.get(0);
+        building.setName(""); // Setting the initial value to null string so that it can be used for error checking
         for(Building each_building : currentBuildings)
         {
-            if(building.toString().equals(each_building.toString()))
+            if(preferences.getDestination().equals(each_building.getName()))
             {
                 building = each_building;
                 break;
             }
         }
+        System.out.println("Algorithm:    destination = " + building.getName());
 
-        if(building.getName().equals(""))
+        // Get distORprice
+        //TODO: distORprice preference is in both parkingPreferences class and in the User class, so which should be used?
+        int distORprice = Session.getCurrentUser().getDistORprice();
+        System.out.println("Algorithm:    distORprice = " + distORprice);
+
+        // Just return the empty list if some variables are not valid.
+        if(currentLotList.size() == 0 || currentBuildings.size() == 0 || building.getName().equals(""))
         {
-            System.out.println("Algorithm: the destination cannot be found.");
             return sortedLotList;
         }
 
+        // Declare a tree map for the sorting
         TreeMap<Double, Lot> tmap = new TreeMap<Double, Lot>();
-        //TODO: distORprice preference is in both parkingPreferences class and in the User class, so which should be used?
-        int distORprice = Session.getCurrentUser().getDistORprice();
-        System.out.println("Algorithm: distORprice = " + distORprice);
 
         //
         // Compute x_prime for each parking lot
         //
         for (Lot lot : currentLotList)
         {
-            double x = getNormalizedDistance(building, lot);
+            double x = computeNormalizedDistance(building, lot);
             double y = getNormalizedParkingCost(lot);
-            double theta = (double)((distORprice - 1) * 10);
+            double theta = (double)((distORprice - 1) * 10); // TODO Make sure if distORprice ranges from 1 to 10
             double x_prime = x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta));
 
-            System.out.println("Algorithm: lot_name = " + lot.getName() + ", x = " + x + ", y = " + y + ", theta = " + theta + ", x_prime = " + x_prime);
+            System.out.println("Algorithm:    lot_name = " + lot.getName() + ", distance = " + computeDistanceInMeter(building, lot) + ", fee = " + lot.getRate()
+                    + ", x = " + x + ", y = " + y + ", theta = " + theta + ", x_prime = " + x_prime);
             tmap.put(x_prime, lot);
         }
 
+        // Generate a sorted list
         Set set = tmap.entrySet();
         Iterator iterator = set.iterator();
-        while(iterator.hasNext())
-        {
-            Map.Entry mentry = (Map.Entry)iterator.next();
-            System.out.print("Algorithm: key is: " + mentry.getKey() + " & Value is: " + mentry.getValue());
-        }
-
-        set = tmap.entrySet();
-        iterator = set.iterator();
         while(iterator.hasNext()) {
             Map.Entry mentry = (Map.Entry) iterator.next();
             sortedLotList.add((Lot) mentry.getValue());
         }
 
-        System.out.println("DEBUG: Algorithm: Exit");
+        System.out.println("Algorithm: Exit");
 
         return sortedLotList;
     }
 
     private double getNormalizedParkingCost(Lot lot)
     {
-        // AVERAGE_PARKING_FEE_PER_HOUR: the average parking expense per hour in the campus which is probably $1.50. This should be pre-determined value for Recommender system
         return lot.getRate() / AVERAGE_PARKING_FEE_PER_HOUR;
     }
 
-    private double getNormalizedDistance(Building building, Lot lot)
+    private double computeNormalizedDistance(Building building, Lot lot)
     {
-        // AVERAGE_DISTANCE: the average walking distance from a parking lot to a class. This should be pre-determined value for Recommender system
 
-        return getActualDistance(building, lot) / AVERAGE_DISTANCE;
+        return computeDistanceInMeter(building, lot) / AVERAGE_DISTANCE_LOT_TO_DEST;
     }
 
-    private double getActualDistance(Building building, Lot lot)
+    private double computeDistanceInMeter(Building building, Lot lot)
     {
         Location building_location = building.getLocation();
         Location lot_location = lot.getLocation();
         float[] result = new float[1];
 
+        //System.out.println("DEBUG: Algorithm: getActualDistance: " + building_location.getLatitude() + ", " + building_location.getLongitude() + ", " + lot_location.getLatitude() + ", " + lot_location.getLongitude());
         Location.distanceBetween(building_location.getLatitude(), building_location.getLongitude(), lot_location.getLatitude(), lot_location.getLongitude(), result);
 
         return result[0];
