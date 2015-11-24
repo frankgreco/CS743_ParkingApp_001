@@ -17,7 +17,7 @@ import java.util.TreeMap;
 
 /**
  * Created by Masaki Ikuta on 11/20/2015.
- * Updated by masaki Ikuta on 11/23/2015 8:05PM.
+ * Updated by masaki Ikuta on 11/23/2015 9:05PM.
  */
 public class Algorithm {
 
@@ -93,8 +93,8 @@ public class Algorithm {
         System.out.println("Algorithm:    currentBuildings = " + currentBuildings.size());
 
         // Get the building user wants to go
-        Building building = currentBuildings.get(0);
-        building.setName(""); // Setting the initial value to null string so that it can be used for error checking
+        Building building = new Building();
+        building.setName("");
         for(Building each_building : currentBuildings)
         {
             if(preferences.getDestination().equals(each_building.getName()))
@@ -105,10 +105,12 @@ public class Algorithm {
         }
         System.out.println("Algorithm:    destination = " + building.getName());
 
-        // Get distORprice
-        //TODO: distORprice preference is in both parkingPreferences class and in the User class, so which should be used?
-        int distORprice = Session.getCurrentUser().getDistORprice();
-        System.out.println("Algorithm:    distORprice = " + distORprice);
+        // Get user preferences
+        int distORprice = (int)Math.floor((double)preferences.getOptimization() / 100.0 * 9.0); // distORprice ranges from 0 to 9
+        boolean allowOutside = preferences.getOutsideParking();
+        boolean handicapReq = preferences.getHandicapRequired();
+        boolean electricReq = preferences.getElectricRequired();
+        System.out.println("Algorithm:    distORprice = " + distORprice + ", allowOutside = " + allowOutside + ", handicapReq = " + handicapReq + ", electricReq = " + electricReq);
 
         // Just return the empty list if some variables are not valid.
         if(currentLotList.size() == 0 || currentBuildings.size() == 0 || building.getName().equals(""))
@@ -126,11 +128,16 @@ public class Algorithm {
         {
             double x = computeNormalizedDistance(building, lot);
             double y = getNormalizedParkingCost(lot);
-            double theta = (double)((distORprice - 1) * 10); // TODO Make sure if distORprice ranges from 1 to 10
+            double theta = (double)((distORprice - 1) * 10);
             double x_prime = x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta));
 
             System.out.println("Algorithm:    lot_name = " + lot.getName() + ", distance = " + computeDistanceInMeter(building, lot) + ", fee = " + lot.getRate()
-                    + ", x = " + x + ", y = " + y + ", theta = " + theta + ", x_prime = " + x_prime);
+                    + ", x = " + x + ", y = " + y + ", theta = " + theta + ", x_prime = " + x_prime + ", isCovered() = " + lot.isCovered());
+
+            if(allowOutside == false && lot.isCovered() == false) { continue; }
+            // if(preferences.getHandicapRequired() == true && lot.isHandicapAvailable() == false ) { continue; }  // TODO Still need to be implemented
+            // if(preferences.getElectricRequired() == true && lot.isElectricAvailable() == false ) { continue; } // TODO Still need to be implemented
+
             tmap.put(x_prime, lot);
         }
 
