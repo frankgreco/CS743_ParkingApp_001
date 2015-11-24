@@ -7,18 +7,17 @@ import com.cs743.uwmparkingfinder.Structures.Building;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.ParkingPreferences;
 import com.cs743.uwmparkingfinder.Structures.Space;
-import com.cs743.uwmparkingfinder.Structures.User;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
  * Created by Masaki Ikuta on 11/20/2015.
- * Updated by masaki Ikuta on 11/24/2015 9:06AM.
+ * Updated by masaki Ikuta on 11/24/2015 1:47PM.
  */
 public class Algorithm {
 
@@ -84,6 +83,7 @@ public class Algorithm {
 
         // Declare the resulting list
         List<Lot> sortedLotList = sortedLotList_;
+        sortedLotList.clear(); // Clear the list since we are re-generate the list
 
         // Get the current lot list
         List<Lot> currentLotList = Session.getCurrentLotList();
@@ -120,7 +120,9 @@ public class Algorithm {
         }
 
         // Declare a tree map for the sorting
-        TreeMap<Double, Lot> tmap = new TreeMap<Double, Lot>();
+        HashMap unsorted_map = new HashMap();
+        ValueComparator bvc = new ValueComparator(unsorted_map);
+        TreeMap sorted_map = new TreeMap(bvc);
 
         //
         // Compute x_prime for each parking lot
@@ -129,7 +131,7 @@ public class Algorithm {
         {
             double x = computeNormalizedDistance(building, lot);
             double y = getNormalizedParkingCost(lot);
-            double theta = (double)((distORprice - 1) * 10);
+            double theta = distORprice * 10;
             double x_prime = x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta));
 
             // Check space availability
@@ -163,15 +165,18 @@ public class Algorithm {
             if (preferences.getHandicapRequired() == true && isHandicapAvailable == false) { continue; }
             if(preferences.getElectricRequired() == true && isElectricAvailable == false) { continue; }
 
-            tmap.put(x_prime, lot);
+            unsorted_map.put(lot, x_prime);
         }
 
         // Generate a sorted list
-        Set set = tmap.entrySet();
-        Iterator iterator = set.iterator();
-        while(iterator.hasNext()) {
-            Map.Entry mentry = (Map.Entry) iterator.next();
-            sortedLotList.add((Lot) mentry.getValue());
+        sorted_map.putAll(unsorted_map);
+
+        Iterator it = sorted_map.entrySet().iterator();
+        while(it.hasNext())
+        {
+            Map.Entry pair = (Map.Entry)it.next();
+            System.out.println("Algorithm:    sortedLotList[" + sortedLotList.size() + "] = " + (Lot)pair.getKey());
+            sortedLotList.add((Lot)pair.getKey());
         }
 
         System.out.println("Algorithm: Exit");
