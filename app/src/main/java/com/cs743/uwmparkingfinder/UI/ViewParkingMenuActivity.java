@@ -23,6 +23,7 @@ import android.widget.ListView;
 
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Lot;
+import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ import java.util.List;
 public class ViewParkingMenuActivity extends AppCompatActivity
 {
     /*************************  Class Static Variables  ***********************/
+    public static final String PREFERENCES_INTENT_DATA = "preferenceData";
 
     /*************************  Class Member Variables  ***********************/
 
@@ -79,9 +81,9 @@ public class ViewParkingMenuActivity extends AppCompatActivity
 
                 System.out.println("Got item " +itemPosition + ", value " + itemValue);
 
-                // TODO:  Need to determine which lot was selected - open that page
-                // For now, display the feature not available page
-                Intent intent = new Intent(ViewParkingMenuActivity.this, NotAvailableActivity.class);
+                SelectedParkingLot curLot=new SelectedParkingLot(itemValue,"Selected by User");
+                Intent intent=new Intent(ViewParkingMenuActivity.this,MonitorParkingLotActivity.class);
+                intent.putExtra(ViewParkingMenuActivity.PREFERENCES_INTENT_DATA,curLot);
                 startActivity(intent);
             }
         });
