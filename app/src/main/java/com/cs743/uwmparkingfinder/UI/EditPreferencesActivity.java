@@ -18,7 +18,7 @@ import android.widget.Toast;
 
 import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
 import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
-import com.cs743.uwmparkingfinder.HTTPManager.UTILITY;
+import com.cs743.uwmparkingfinder.Utility.UTILITY;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.User;
 
@@ -91,16 +91,6 @@ public class EditPreferencesActivity extends AppCompatActivity implements View.O
                 savePreferences(v);
             break;
         }
-    }
-
-    /**
-     * Check to see whether there is an internet connection or not.
-     * @return whether there is an internet connection
-     */
-    public boolean isOnline(){
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     private static ProgressDialog controlProgressDialog(boolean show, Context context, ProgressDialog p, String message){
@@ -187,7 +177,7 @@ public class EditPreferencesActivity extends AppCompatActivity implements View.O
             boolean electric=electricSwitch_.isChecked();
 
             //Update server
-            if (isOnline()) {
+            if (UTILITY.isOnline(getApplicationContext())) {
                 RequestPackage p = new RequestPackage();
                 p.setMethod(GET);
                 p.setUri(UTILITY.UBUNTU_SERVER_URL);

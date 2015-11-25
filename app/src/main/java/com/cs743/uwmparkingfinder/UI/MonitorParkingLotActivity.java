@@ -13,18 +13,35 @@ package com.cs743.uwmparkingfinder.UI;
 /****************************    Include Files    *****************************/
 import android.content.Intent;
 import android.content.res.Resources;
+import android.location.Location;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.cs743.uwmparkingfinder.GPSLocation.LocationTracker;
+import com.cs743.uwmparkingfinder.GPSLocation.ProviderLocationTracker;
+import com.cs743.uwmparkingfinder.GPSLocation.*;
+import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
+import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
+import com.cs743.uwmparkingfinder.Parser.JSONParser;
+import com.cs743.uwmparkingfinder.Session.Session;
+import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+import com.cs743.uwmparkingfinder.Utility.UTILITY;
 
 /****************************  Class Definitions  *****************************/
 
@@ -39,6 +56,9 @@ public class MonitorParkingLotActivity extends AppCompatActivity
 
     /// Polling timer interval (milliseconds)
     public static final int POLL_TIMER_INTERVAL_MSEC = 1000;
+
+    //location
+    ProviderLocationTracker tracker;
 
     /*************************  Class Member Variables  ***********************/
 
@@ -69,6 +89,9 @@ public class MonitorParkingLotActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_monitor_parking_lot);
 
+        //initialize tracker
+        tracker = new ProviderLocationTracker(MonitorParkingLotActivity.this, ProviderLocationTracker.ProviderType.GPS);
+
         // Retrieve screen inputs
         selectedLotNameLabel_ = (TextView)findViewById(R.id.selectedLotNameLabel);
         spaceRemainingLabel_ = (TextView)findViewById(R.id.spaceRemainingLabel);
@@ -88,7 +111,8 @@ public class MonitorParkingLotActivity extends AppCompatActivity
         spotsRemaining_ = 0;
 
         // Set parking lot name label
-        selectedLotNameLabel_.setText("Lot:  " + selectedLot_.getParkingLotName());
+        String uiLotName = getResources().getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName()));
+        selectedLotNameLabel_.setText("Lot:  " + uiLotName);
 
         // Using SelectedParkingLot data, determine the number of spaces available and in total
         getParkingSpotCount();
@@ -98,7 +122,36 @@ public class MonitorParkingLotActivity extends AppCompatActivity
         findAndDisplayParkingLotImage();
 
         // Remainder of screen updates will be handled by onWindowFocusChanged()
+
+
+        //ideally call this method when the user initiates parking
+        tracker.start(new LocationTracker.LocationUpdateListener() {
+            @Override
+            public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
+                NumberFormat formatter = new DecimalFormat("#0.00000");
+                //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
+                Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
+                Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
+
+                //get updated information from backend - STORED IN Session.getCurrentLotList();
+                if(UTILITY.isOnline(getApplicationContext())){
+                    RequestPackage p = new RequestPackage();
+                    p.setMethod("GET");
+                    p.setUri(UTILITY.UBUNTU_SERVER_URL);
+                    p.setParam("query", "available");
+                    new WebserviceCallOne().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+                }else{
+                    Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+                }
+
+                //DO OTHER STUFF EVERY SO OFTEN
+                //CODE GOES HERE
+
+
+            }
+        });
     }
+
 
     /**
      * Called when the window needs to be updated.
@@ -190,7 +243,7 @@ public class MonitorParkingLotActivity extends AppCompatActivity
     {
         Resources res = getResources();
         int lotMapImage = R.drawable.lot_unavailable;
-        String lotName = selectedLot_.getParkingLotName();
+        String lotName = res.getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName()));
 
         if (lotName.equalsIgnoreCase(res.getString(R.string.LOT_59001)))
         {
@@ -412,4 +465,36 @@ public class MonitorParkingLotActivity extends AppCompatActivity
             processPollTimerEvent();
         }
     }
+
+
+    private class WebserviceCallOne extends AsyncTask<RequestPackage, String, List<Lot>> {
+        @Override
+        protected List<Lot> doInBackground(RequestPackage... params) {
+
+            String content = HttpManager.getData(params[0]);
+
+            return JSONParser.parseLotFeed(content);
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+        }
+
+        @Override
+        protected void onPostExecute(List<Lot> s) {
+
+            if(s != null){
+                Session.setCurrentLotList(s);
+                StringBuilder sb = new StringBuilder();
+                for(Lot item : s){
+                    sb.append(item.toString() + "\n");
+                }
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+        }
+    }
+
 }

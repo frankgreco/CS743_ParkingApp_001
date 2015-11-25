@@ -1,12 +1,13 @@
 /*******************************************************************************
- * File Name:  ParkingPreferences.java
+ * File Name:  ParkingRequest.java
  *
  * Description:
- * Structure used to hold parking preference parameters
+ * Structure used to hold parking request parameters
  *
  * Revision  Date        Author             Summary of Changes Made
  * --------  ----------- ------------------ ------------------------------------
  * 1         11-Nov-2015 Eric Hitt          Original
+ * 2         24-Nov-2015 Eric Hitt          Renamed to ParkingRequest
  ******************************************************************************/
 package com.cs743.uwmparkingfinder.Structures;
 
@@ -15,23 +16,15 @@ package com.cs743.uwmparkingfinder.Structures;
 /****************************  Class Definitions  *****************************/
 
 /**
- * Represents parking preferences
+ * Represents parking request packet
  */
-public class ParkingPreferences
+public class ParkingRequest
 {
     /*************************  Class Static Variables  ***********************/
-    /*public enum OPT_STRATEGY
-    {
-        OPT_COST,                           ///< Optimize based on cost
-        OPT_DIST                            ///< Optimize based on distance
-    }*/
 
     /*************************  Class Member Variables  ***********************/
 
     private String destination_;            ///< Destination building
-    private int destTimeHour_;              ///< Destination time (hours part)
-    private int destTimeMin_;               ///< Destination time (minute part)
-    //private OPT_STRATEGY optimization_;     ///< Preferred optimization
     private int disORprice_;                ///< Cost or Distance Preference: 0=prefer closer / 100=prefer cheaper
     private boolean allowOutside_;          ///< True if outside parking ok
     private boolean handicapReq_;           ///< True if require handicap parking
@@ -40,39 +33,19 @@ public class ParkingPreferences
     /*************************  Class Public Interface  ***********************/
 
     /**
-     * Default constructor
-     */
-    public ParkingPreferences()
-    {
-        destination_ = null;
-        destTimeHour_ = 0;
-        destTimeMin_ = 0;
-        //optimization_ = OPT_STRATEGY.OPT_COST;
-        disORprice_=50;
-        allowOutside_ = true;
-        handicapReq_ = false;
-        electricReq_ = false;
-    }
-
-    /**
      * Constructor
      *
      * @param destination Overall destination building
-     * @param hours Destination time (hours component)
-     * @param min Destination time (minutes component)
      * @param optimization Optimization strategy
      * @param outsideOk True if it is ok to parking outside
      * @param handicapReq True if require handicap parking
      * @param electricReq True if require electric plug-in parking
      */
-    public ParkingPreferences(String destination, int hours, int min,
-                              int optimization, boolean outsideOk,
-                              boolean handicapReq, boolean electricReq)
+    public ParkingRequest(String destination,
+                         int optimization, boolean outsideOk,
+                         boolean handicapReq, boolean electricReq)
     {
         destination_ = destination;
-        destTimeHour_ = hours;
-        destTimeMin_ = min;
-        //optimization_ = optimization;
         disORprice_=optimization;
         allowOutside_ = outsideOk;
         handicapReq_ = handicapReq;
@@ -103,35 +76,6 @@ public class ParkingPreferences
     }
 
     /**
-     * Assign a destination time
-     *
-     * @param hour Hours component
-     * @param min Minutes component
-     *
-     * @return true if able to update time successfully, false otherwise
-     */
-    public boolean setDestinationTime(int hour, int min)
-    {
-        final int MAX_HOURS = 24;
-        final int MAX_MINUTES = 60;
-        boolean success = true;
-
-        // Times are 0-based
-        if (((hour < 0) || (hour >= MAX_HOURS)) ||
-            ((min < 0) || (min >= MAX_MINUTES)))
-        {
-            success = false;
-        }
-        else
-        {
-            destTimeHour_ = hour;
-            destTimeMin_ = min;
-        }
-
-        return success;
-    }
-
-    /**
      * Assign an optimization strategy
      *
      * @param optimization Optimization strategy
@@ -141,16 +85,9 @@ public class ParkingPreferences
     public boolean setOptimization(int optimization)
     {
         boolean success = true;
-        disORprice_=optimization;
-       /* if ((optimization != OPT_STRATEGY.OPT_COST) ||
-            (optimization != OPT_STRATEGY.OPT_DIST))
-        {
-            success = false;
-        }
-        else
-        {
-            optimization_ = optimization;
-        }*/
+
+        disORprice_ = optimization;
+
         return success;
     }
 
@@ -213,26 +150,6 @@ public class ParkingPreferences
     }
 
     /**
-     * Retrieve destination time (hour component)
-     *
-     * @return Hour component to destination time
-     */
-    public int getDestinationTimeHours()
-    {
-        return destTimeHour_;
-    }
-
-    /**
-     * Retrieve destination time (minute component)
-     *
-     * @return Minute component to destination time
-     */
-    public int getDestinationTimeMinutes()
-    {
-        return destTimeMin_;
-    }
-
-    /**
      * Retrieves optimization strategy
      *
      * @return Optimization strategy
@@ -273,4 +190,16 @@ public class ParkingPreferences
     }
 
     /************************  Class Private Interface  ***********************/
+
+    /**
+     * Default constructor
+     */
+    private ParkingRequest()
+    {
+        destination_ = null;
+        disORprice_=50;
+        allowOutside_ = true;
+        handicapReq_ = false;
+        electricReq_ = false;
+    }
 }

@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity
 
         // TODO:  Determine if should create a new preference or suggest based on past data
         // Need to create a new preference
-        Intent intent = new Intent(this, CreateNewPreferenceActivity.class);
+        Intent intent = new Intent(this, SelectParkingOptionsActivity.class);
         startActivity(intent);
     }
 

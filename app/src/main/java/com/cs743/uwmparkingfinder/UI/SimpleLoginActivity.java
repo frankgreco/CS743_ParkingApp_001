@@ -16,11 +16,10 @@ import android.widget.Toast;
 
 import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
 import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
-import com.cs743.uwmparkingfinder.HTTPManager.UTILITY;
+import com.cs743.uwmparkingfinder.Utility.UTILITY;
 import com.cs743.uwmparkingfinder.Parser.JSONParser;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Building;
-import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.User;
 
 import java.util.List;

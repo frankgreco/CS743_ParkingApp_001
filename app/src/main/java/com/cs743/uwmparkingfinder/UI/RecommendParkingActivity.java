@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.cs743.uwmparkingfinder.Algorithm.Algorithm;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+import com.cs743.uwmparkingfinder.Utility.UTILITY;
 
 import java.util.List;
 
@@ -205,7 +206,8 @@ public class RecommendParkingActivity extends AppCompatActivity
         recommendationHeader_.setText(res.getString(R.string.LOT_REC_HEADER_FOUND));
 
         // Set recommended parking lot text
-        recommendationBody_.setText(currLotSelection_.getParkingLotName());
+        String uiLotName = res.getString(UTILITY.convertDbLotNameToUINameID(currLotSelection_.getParkingLotName()));
+        recommendationBody_.setText(uiLotName);
 
         // Set reason header
         reasonHeader_.setText(res.getString(R.string.LOT_REC_REASON_REASON));

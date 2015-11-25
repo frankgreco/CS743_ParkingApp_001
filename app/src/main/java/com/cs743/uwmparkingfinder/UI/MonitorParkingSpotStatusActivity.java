@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+import com.cs743.uwmparkingfinder.Utility.UTILITY;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -64,8 +65,9 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         selectedLot_ =
                 (SelectedParkingLot)intent.getSerializableExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA);
 
-        // Set parking space name
-        selectedLotNameLabel_.setText("Lot:  " + selectedLot_.getParkingLotName());
+        // Set parking lot name
+        String uiLotName = getResources().getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName()));
+        selectedLotNameLabel_.setText("Lot:  " + uiLotName);
 
         // TODO:  Populate list view, get parking lot status (poll timer?)
     }
