@@ -24,6 +24,7 @@ import android.widget.ListView;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+import com.cs743.uwmparkingfinder.Utility.UTILITY;
 
 import java.util.List;
 
@@ -55,6 +56,8 @@ public class ViewParkingMenuActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_view_parking_menu);
 
+        Resources res = getResources();
+
         // Retrieve screen inputs
         listView_ = (ListView)findViewById(R.id.lotNameList);
 
@@ -64,7 +67,7 @@ public class ViewParkingMenuActivity extends AppCompatActivity
         String[] lotNames = new String[numLots];
         for (int i = 0; i < numLots; i++)
         {
-            lotNames[i] = lotList.get(i).getName();
+            lotNames[i] = res.getString(UTILITY.convertDbLotNameToUINameID(lotList.get(i).getName()));
         }
 
         ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_toclistview, lotNames);
@@ -79,10 +82,13 @@ public class ViewParkingMenuActivity extends AppCompatActivity
                 int itemPosition = position;        // ListView clicked item index
                 String itemValue = (String) listView_.getItemAtPosition(position);
 
-                System.out.println("Got item " +itemPosition + ", value " + itemValue);
+                // Convert UI name to DB name
+                String dbName = convertUILotNameToDBLotName(itemValue);
 
-                SelectedParkingLot curLot=new SelectedParkingLot(itemValue,"Selected by User");
-                Intent intent=new Intent(ViewParkingMenuActivity.this,MonitorParkingLotActivity.class);
+                System.out.println("Got item " +itemPosition + ", value " + itemValue + " (" + dbName + ")");
+
+                SelectedParkingLot curLot = new SelectedParkingLot(dbName,"Selected by User");
+                Intent intent = new Intent(ViewParkingMenuActivity.this,MonitorParkingLotActivity.class);
                 intent.putExtra(ViewParkingMenuActivity.PREFERENCES_INTENT_DATA,curLot);
                 startActivity(intent);
             }
@@ -90,4 +96,125 @@ public class ViewParkingMenuActivity extends AppCompatActivity
     }
 
     /************************  Class Private Interface  ***********************/
+
+    private String convertUILotNameToDBLotName(String uiName)
+    {
+        String dbLotName = "UNKNOWN";
+        Resources res = getResources();
+
+        if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59001)))
+        {
+            dbLotName = "LOT_59001";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59002)))
+        {
+            dbLotName = "LOT_59002";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59006)))
+        {
+            dbLotName = "LOT_59006";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59007)))
+        {
+            dbLotName = "LOT_59007";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59008)))
+        {
+            dbLotName = "LOT_59008";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59009)))
+        {
+            dbLotName = "LOT_59009";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59010)))
+        {
+            dbLotName = "LOT_59010";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59012)))
+        {
+            dbLotName = "LOT_59012";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59013)))
+        {
+            dbLotName = "LOT_59013";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59014)))
+        {
+            dbLotName = "LOT_59014";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59015)))
+        {
+            dbLotName = "LOT_59015";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59016)))
+        {
+            dbLotName = "LOT_59016";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59018)))
+        {
+            dbLotName = "LOT_59018";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59019)))
+        {
+            dbLotName = "LOT_59019";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59020)))
+        {
+            dbLotName = "LOT_59020";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59023_B1)))
+        {
+            dbLotName = "LOT_59023_B1";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59023_B2)))
+        {
+            dbLotName = "LOT_59023_B2";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59023_B3)))
+        {
+            dbLotName = "LOT_59023_B3";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59024)))
+        {
+            dbLotName = "LOT_59024";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59026)))
+        {
+            dbLotName = "LOT_59026";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59033_1)))
+        {
+            dbLotName = "LOT_59033_1";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59033_2)))
+        {
+            dbLotName = "LOT_59033_2";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59033_3)))
+        {
+            dbLotName = "LOT_59033_3";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59033_4)))
+        {
+            dbLotName = "LOT_59033_4";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59034)))
+        {
+            dbLotName = "LOT_59034";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59035)))
+        {
+            dbLotName = "LOT_59035";
+        }
+        else if (uiName.equalsIgnoreCase(res.getString(R.string.LOT_59036)))
+        {
+            dbLotName = "LOT_59036";
+        }
+        else
+        {
+            System.out.println("ERROR:  Unknown parking lot " + uiName);
+        }
+
+        return dbLotName;
+    }
 }
