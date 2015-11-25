@@ -14,15 +14,21 @@ package com.cs743.uwmparkingfinder.UI;
 /****************************    Include Files    *****************************/
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cs743.uwmparkingfinder.Algorithm.Algorithm;
+import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
+import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
+import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+import com.cs743.uwmparkingfinder.Structures.User;
 import com.cs743.uwmparkingfinder.Utility.UTILITY;
 
 import java.util.List;
@@ -124,6 +130,28 @@ public class RecommendParkingActivity extends AppCompatActivity
         }
         else
         {
+            // Save selected spot to log
+           if(UTILITY.isOnline(getApplicationContext())){
+                User user= Session.getCurrentUser();
+                //Get Lot Object
+                Lot lot=null;
+                for(Lot l:Session.getCurrentLotList()) {
+                    if(l.getName().equalsIgnoreCase(currLotSelection_.getParkingLotName())) {
+                        lot=l;
+                    }
+                }
+                RequestPackage p= new RequestPackage();
+                p.setMethod("GET");
+                p.setUri(UTILITY.UBUNTU_SERVER_URL);
+                p.setParam("query", "insert");
+                p.setParam("username", user.getUsername());
+                p.setParam("keyword", lot==null?"":lot.getKeywords().toString());
+                p.setParam("lotName",currLotSelection_.getParkingLotName());
+                p.setParam("length", "500");
+                new SaveLogItemToDatabase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,p);
+            } else {
+                Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+            }
             // Go to the monitor parking screen
             // Prepare activity showing selected parking lot and reason (pass selectedLot data)
             // Pass preference data to the recommend parking activity and start activity
@@ -217,5 +245,13 @@ public class RecommendParkingActivity extends AppCompatActivity
 
         // Set confirmation label
         confirmLabel_.setText(res.getString(R.string.LOT_REC_CONFIRM_OK));
+    }
+
+    private class SaveLogItemToDatabase extends AsyncTask<RequestPackage,String,String> {
+        @Override
+        protected String doInBackground(RequestPackage... params) {
+            String content = HttpManager.getData(params[0]);
+            return content==null?"failed":"succeeded";
+        }
     }
 }
