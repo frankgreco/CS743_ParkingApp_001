@@ -13,6 +13,7 @@ package com.cs743.uwmparkingfinder.UI;
 /****************************    Include Files    *****************************/
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.ConnectivityManager;
@@ -49,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.jar.Manifest;
 
 /****************************  Class Definitions  *****************************/
 
@@ -115,7 +117,7 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         }
     }
 
-    private Space[] getSpacesList() {
+    /*private Space[] getSpacesList() {
         List<Lot> l=Session.getCurrentLotList();
         List<Space> tmpSpaces=new ArrayList<>();
         int totalSpaces=0;
@@ -148,7 +150,7 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         } else {
             return null;
         }
-    }
+    }*/
 
     @Override
     public void addContentView(View view, ViewGroup.LayoutParams params) {
@@ -225,6 +227,7 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
                 parkingSpotStatusList_.setAdapter(adapter);
 
             } else {
+                Toast.makeText(getApplicationContext(), "No parking spots found for " + selectedLot_.getParkingLotName(), Toast.LENGTH_LONG).show();
                 System.out.println("ERROR: No parking spots found for " + selectedLot_.getParkingLotName());
             }
 
@@ -232,10 +235,13 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
             tracker.start(new LocationTracker.LocationUpdateListener() {
                 @Override
                 public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
-                    NumberFormat formatter = new DecimalFormat("#0.00000");
-                    //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
-                    Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
-                    Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
+
+                    if(PackageManager.PERMISSION_GRANTED == checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)){
+                        NumberFormat formatter = new DecimalFormat("#0.00000");
+                        //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
+                        Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
+                        Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
+                    }
 
                     List<Space> updatedSpaces = new ArrayList<>();
                     //get updated information from backend - STORED IN Session.getCurrentLotList();
@@ -265,7 +271,7 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
             List<Space> spaces = new ArrayList<>();
             int i;
             for(i = 0; i< Session.getAllSpacesByLot().size(); ++i){
-                String lot_name = getString(UTILITY.convertDbLotNameToUINameID(Session.getAllSpacesByLot().get(i).getName()));
+                String lot_name = Session.getAllSpacesByLot().get(i).getName();
                 if(lot_name.equalsIgnoreCase(selectedLot_.getParkingLotName())){
                     spaces = Session.getAllSpacesByLot().get(i).getSpaces();
                     break;

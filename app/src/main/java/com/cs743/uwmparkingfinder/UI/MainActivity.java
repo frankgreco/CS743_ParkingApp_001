@@ -31,6 +31,7 @@ import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
 import com.cs743.uwmparkingfinder.Parser.JSONParser;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Lot;
+import com.cs743.uwmparkingfinder.Utility.UTILITY;
 
 import java.util.List;
 
@@ -187,10 +188,10 @@ public class MainActivity extends AppCompatActivity
     /**
      * Webservice call class, used to get current lots available
      */
-    private class WebserviceCallOne extends AsyncTask<RequestPackage, String, List<Lot>>
+    private class WebserviceCallOne extends AsyncTask<RequestPackage, String, List<List<Lot>>>
     {
         @Override
-        protected List<Lot> doInBackground(RequestPackage... params)
+        protected List<List<Lot>> doInBackground(RequestPackage... params)
         {
 
             String content = HttpManager.getData(params[0]);
@@ -204,18 +205,14 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(List<Lot> s)
+        protected void onPostExecute(List<List<Lot>> s)
         {
             if(s != null)
             {
-                Session.setCurrentLotList(s);
-                StringBuilder sb = new StringBuilder();
-                for(Lot item : s)
-                {
-                    sb.append(item.toString() + "\n");
+                if(s != null){
+                    Session.setCurrentLotList(s.get(UTILITY.AVAILABLE));
+                    Session.setAllSpacesByLot(s.get(UTILITY.ALL));
                 }
-
-                System.out.println(sb.toString());
             }
             else
             {

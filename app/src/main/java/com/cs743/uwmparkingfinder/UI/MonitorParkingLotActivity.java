@@ -12,6 +12,7 @@ package com.cs743.uwmparkingfinder.UI;
 
 /****************************    Include Files    *****************************/
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -129,11 +130,12 @@ public class MonitorParkingLotActivity extends AppCompatActivity
         tracker.start(new LocationTracker.LocationUpdateListener() {
             @Override
             public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
-                NumberFormat formatter = new DecimalFormat("#0.00000");
-                //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
-                Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
-                Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
-
+                if(PackageManager.PERMISSION_GRANTED == checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)){
+                    NumberFormat formatter = new DecimalFormat("#0.00000");
+                    //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
+                    Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
+                    Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
+                }
                 //get updated information from backend - STORED IN Session.getCurrentLotList();
                 if(UTILITY.isOnline(getApplicationContext())){
                     RequestPackage p = new RequestPackage();
