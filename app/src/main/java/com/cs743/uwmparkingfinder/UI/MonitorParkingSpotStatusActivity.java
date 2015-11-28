@@ -117,41 +117,6 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         }
     }
 
-    /*private Space[] getSpacesList() {
-        List<Lot> l=Session.getCurrentLotList();
-        List<Space> tmpSpaces=new ArrayList<>();
-        int totalSpaces=0;
-        for (Lot lot: l) {
-            if (selectedLot_.getParkingLotName().equalsIgnoreCase(lot.getName())){
-                //TODO:is there a way to get all the spaces for a lot because these are only available spaces
-                tmpSpaces=lot.getSpaces();
-                totalSpaces=lot.getNumSpaces();
-                break;
-            }
-        }
-
-
-        if(!tmpSpaces.isEmpty()) {
-            Space[] spaces=new Space[totalSpaces];
-            //TODO:Fix--This is not real data
-            //since the list in Lot is only available spaces, fill in the unavailable spaces
-            boolean handicap=tmpSpaces.get(0).isHandicap();
-            boolean electric=tmpSpaces.get(0).isElectric();
-
-            for(Space s:tmpSpaces) {
-                spaces[s.getNumber()]=s;
-            }
-            for(int i=0;i<spaces.length;i++) {
-                if(spaces[i]==null) {
-                    spaces[i]=new Space(i,selectedLot_.getParkingLotName(),false,"False",handicap,electric);
-                }
-            }
-            return spaces;
-        } else {
-            return null;
-        }
-    }*/
-
     @Override
     public void addContentView(View view, ViewGroup.LayoutParams params) {
         super.addContentView(view, params);
@@ -231,40 +196,39 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
                 System.out.println("ERROR: No parking spots found for " + selectedLot_.getParkingLotName());
             }
 
+            if(PackageManager.PERMISSION_GRANTED != checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1340);
+            }else{
+                tracker.start(new LocationTracker.LocationUpdateListener() {
+                    @Override
+                    public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
 
-            tracker.start(new LocationTracker.LocationUpdateListener() {
-                @Override
-                public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
-
-                    if(PackageManager.PERMISSION_GRANTED == checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)){
                         NumberFormat formatter = new DecimalFormat("#0.00000");
                         //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
                         Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
                         Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
-                    }
 
-                    List<Space> updatedSpaces = new ArrayList<>();
-                    //get updated information from backend - STORED IN Session.getCurrentLotList();
-                    if(UTILITY.isOnline(getApplicationContext())){
-                        //get list of spaces in the selected lot
-                        //this should be a call to the backend, so it will need the if online logic...eventually
-                        updatedSpaces = updateSpaces();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+                        List<Space> updatedSpaces = new ArrayList<>();
+                        //get updated information from backend - STORED IN Session.getCurrentLotList();
+                        if(UTILITY.isOnline(getApplicationContext())){
+                            //get list of spaces in the selected lot
+                            //this should be a call to the backend, so it will need the if online logic...eventually
+                            updatedSpaces = updateSpaces();
+                        }else{
+                            Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+                        }
+                        //clear the current spots from the list
+                        //adapter.clear();
+                        if(updateSpaces().size() > 0) {
+                            Space[] toPass = new Space[updatedSpaces.size()];
+                            adapter = new SpacesAdapter(getApplicationContext(), R.layout.activity_spotlistview, updatedSpaces.toArray(toPass));
+                            parkingSpotStatusList_.setAdapter(adapter);
+                        } else {
+                            //I feel like we shoul put a warning...maybe if we have time!
+                        }
                     }
-                    //clear the current spots from the list
-                    adapter.clear();
-                    if(updateSpaces().size() > 0) {
-                        //add new spaces to adapter
-                        Space[] toPass = new Space[updatedSpaces.size()];
-                        adapter.addAll(updatedSpaces.toArray(toPass));
-                        //refresh the view
-                        adapter.notifyDataSetChanged();
-                    } else {
-                        //I feel like we shoul put a warning...maybe if we have time!
-                    }
-                }
-            });
+                });
+            }
         }
 
         private List<Space> updateSpaces() {

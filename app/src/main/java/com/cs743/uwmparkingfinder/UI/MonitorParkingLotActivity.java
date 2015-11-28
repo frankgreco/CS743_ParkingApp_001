@@ -11,6 +11,7 @@
 package com.cs743.uwmparkingfinder.UI;
 
 /****************************    Include Files    *****************************/
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -127,32 +128,34 @@ public class MonitorParkingLotActivity extends AppCompatActivity
 
 
         //ideally call this method when the user initiates parking
-        tracker.start(new LocationTracker.LocationUpdateListener() {
-            @Override
-            public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
-                if(PackageManager.PERMISSION_GRANTED == checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)){
+        if(PackageManager.PERMISSION_GRANTED != checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1340);
+        }else{
+            tracker.start(new LocationTracker.LocationUpdateListener() {
+                @Override
+                public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
                     NumberFormat formatter = new DecimalFormat("#0.00000");
                     //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
                     Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
                     Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
+                    //get updated information from backend - STORED IN Session.getCurrentLotList();
+                    if (UTILITY.isOnline(getApplicationContext())) {
+                        RequestPackage p = new RequestPackage();
+                        p.setMethod("GET");
+                        p.setUri(UTILITY.UBUNTU_SERVER_URL);
+                        p.setParam("query", "available");
+                        new WebserviceCallOne().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+                    }
+
+                    //DO OTHER STUFF EVERY SO OFTEN
+                    //CODE GOES HERE
+
+
                 }
-                //get updated information from backend - STORED IN Session.getCurrentLotList();
-                if(UTILITY.isOnline(getApplicationContext())){
-                    RequestPackage p = new RequestPackage();
-                    p.setMethod("GET");
-                    p.setUri(UTILITY.UBUNTU_SERVER_URL);
-                    p.setParam("query", "available");
-                    new WebserviceCallOne().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
-                }else{
-                    Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
-                }
-
-                //DO OTHER STUFF EVERY SO OFTEN
-                //CODE GOES HERE
-
-
-            }
-        });
+            });
+        }
     }
 
 
