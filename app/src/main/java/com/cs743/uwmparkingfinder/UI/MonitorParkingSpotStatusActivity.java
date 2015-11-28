@@ -238,7 +238,6 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
                     Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
 
                     List<Space> updatedSpaces = new ArrayList<>();
-
                     //get updated information from backend - STORED IN Session.getCurrentLotList();
                     if(UTILITY.isOnline(getApplicationContext())){
                         //get list of spaces in the selected lot
