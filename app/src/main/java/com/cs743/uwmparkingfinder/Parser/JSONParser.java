@@ -29,32 +29,74 @@ public class JSONParser {
      * @param content the JSON string to parse
      * @return a List of Lot Objects
      */
-    public static List<Lot> parseLotFeed(String content){
+    public static List<List<Lot>> parseLotFeed(String content){
 
-        List<Lot> lotList;
+        ArrayList<List<Lot>> toReturn = new ArrayList<>();
+        List<Lot> lotListAvailable;
+        List<Lot> lotListAll;
+        Lot curLot;
 
         try{
             JSONArray arr = new JSONArray(content);
-            lotList = new ArrayList<>();
+
+            lotListAvailable = new ArrayList<>();
+            lotListAll = new ArrayList<>();
 
             for(int i = 0; i < arr.length(); ++i){
                 JSONObject obj = arr.getJSONObject(i);
-                Lot curLot = new Lot();
 
+                boolean available = obj.getString("available").equals("1") ? true : false;
                 String curLotName = obj.getString("lotName");
-
                 boolean exists = false;
                 int index;
-                for(index = 0; index < lotList.size(); ++index) {
-                    if (lotList.get(index).getName().equals(curLotName)) {
+
+                if(available){
+
+                    for(index = 0; index < lotListAvailable.size(); ++index) {
+                        if (lotListAvailable.get(index).getName().equals(curLotName)) {
+                            exists = true;
+                            break;
+                        }
+                    }
+
+                    if(exists){ //only add to lotListAvailable if space is available
+                        lotListAvailable.get(index).getSpaces().add(new Space(obj.getInt("spaceNumber"), lotListAvailable.get(index).getName(), obj.getString("available").equals("1") ? true : false, obj.getString("expired"), obj.getBoolean("handicap"), obj.getBoolean("electric")));
+                    }else{
+                        curLot = new Lot();
+                        android.location.Location curLoc = new android.location.Location("");
+                        curLot.setName(obj.getString("lotName"));
+                        curLoc.setLatitude(obj.getDouble("latitude"));
+                        curLoc.setLongitude(obj.getDouble("longitude"));
+                        curLot.setLocation(curLoc);
+                        curLot.setNumSpaces(obj.getInt("numSpaces"));
+                        curLot.setRate(obj.getDouble("rate"));
+                        curLot.setMaxTime(obj.getInt("maxTime"));
+                        String keywords = obj.getString("keywords");
+                        List<String> keys = Arrays.asList(keywords.split("\\s*,\\s*"));
+                        curLot.setKeywords(keys);
+                        curLot.getSpaces().add(new Space(obj.getInt("spaceNumber"), curLot.getName(), obj.getString("available").equals("1") ? true : false, obj.getString("expired"), obj.getBoolean("handicap"), obj.getBoolean("electric")));
+                        curLot.setCovered(obj.getBoolean("covered"));
+
+                        lotListAvailable.add(curLot);
+
+                    }
+
+                }
+
+                //add all spaces to lotListAll
+                curLot = new Lot();
+                exists = false;
+                for(index = 0; index < lotListAll.size(); ++index) {
+                    if (lotListAll.get(index).getName().equals(curLotName)) {
                         exists = true;
                         break;
                     }
                 }
 
                 if(exists){
-                    lotList.get(index).getSpaces().add(new Space(obj.getInt("spaceNumber"), lotList.get(index).getName(), obj.getString("available").equals("1") ? true : false, obj.getString("expired"), obj.getBoolean("handicap"), obj.getBoolean("electric")));
+                    lotListAll.get(index).getSpaces().add(new Space(obj.getInt("spaceNumber"), lotListAll.get(index).getName(), obj.getString("available").equals("1") ? true : false, obj.getString("expired"), obj.getBoolean("handicap"), obj.getBoolean("electric")));
                 }else{
+                    curLot = new Lot();
                     android.location.Location curLoc = new android.location.Location("");
                     curLot.setName(obj.getString("lotName"));
                     curLoc.setLatitude(obj.getDouble("latitude"));
@@ -69,15 +111,65 @@ public class JSONParser {
                     curLot.getSpaces().add(new Space(obj.getInt("spaceNumber"), curLot.getName(), obj.getString("available").equals("1") ? true : false, obj.getString("expired"), obj.getBoolean("handicap"), obj.getBoolean("electric")));
                     curLot.setCovered(obj.getBoolean("covered"));
 
-                    lotList.add(curLot);
+                    lotListAll.add(curLot);
 
+                }
+
+            }
+
+            toReturn.add(lotListAvailable);
+            toReturn.add(lotListAll);
+
+        }catch (JSONException e){
+            e.printStackTrace();
+            return null;
+        }
+        return toReturn;
+    }
+
+    /**
+     * Turns a string of JSON formatted content and fills a typed Lot
+     * @param content the JSON string to parse
+     * @return Lot Object containing all spaces for a specified lot
+     */
+    public static Lot parseSpacesByLot(String content){
+
+        Lot lot = new Lot();
+
+        if(content.equals("no rows returned")){
+            return lot;
+        }
+
+        try{
+            JSONArray arr = new JSONArray(content);
+
+            for(int i = 0; i < arr.length(); ++i){
+                JSONObject obj = arr.getJSONObject(i);
+
+                //get first item to populate
+                if(i == 0){ //set lot variables as well as first space
+                    android.location.Location curLoc = new android.location.Location("");
+                    lot.setName(obj.getString("lotName"));
+                    curLoc.setLatitude(obj.getDouble("latitude"));
+                    curLoc.setLongitude(obj.getDouble("longitude"));
+                    lot.setLocation(curLoc);
+                    lot.setNumSpaces(obj.getInt("numSpaces"));
+                    lot.setRate(obj.getDouble("rate"));
+                    lot.setMaxTime(obj.getInt("maxTime"));
+                    String keywords = obj.getString("keywords");
+                    List<String> keys = Arrays.asList(keywords.split("\\s*,\\s*"));
+                    lot.setKeywords(keys);
+                    lot.getSpaces().add(new Space(obj.getInt("spaceNumber"), lot.getName(), obj.getString("available").equals("1") ? true : false, obj.getString("expired"), obj.getBoolean("handicap"), obj.getBoolean("electric")));
+                    lot.setCovered(obj.getBoolean("covered"));
+                }else{ //populate other spaces
+                    lot.getSpaces().add(new Space(obj.getInt("spaceNumber"), lot.getName(), obj.getString("available").equals("1") ? true : false, obj.getString("expired"), obj.getBoolean("handicap"), obj.getBoolean("electric")));
                 }
             }
         }catch (JSONException e){
             e.printStackTrace();
             return null;
         }
-        return lotList;
+        return lot;
     }
 
     /**

@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -467,9 +468,9 @@ public class MonitorParkingLotActivity extends AppCompatActivity
     }
 
 
-    private class WebserviceCallOne extends AsyncTask<RequestPackage, String, List<Lot>> {
+    private class WebserviceCallOne extends AsyncTask<RequestPackage, String, List<List<Lot>>> {
         @Override
-        protected List<Lot> doInBackground(RequestPackage... params) {
+        protected List<List<Lot>> doInBackground(RequestPackage... params) {
 
             String content = HttpManager.getData(params[0]);
 
@@ -481,14 +482,11 @@ public class MonitorParkingLotActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(List<Lot> s) {
+        protected void onPostExecute(List<List<Lot>> s) {
 
             if(s != null){
-                Session.setCurrentLotList(s);
-                StringBuilder sb = new StringBuilder();
-                for(Lot item : s){
-                    sb.append(item.toString() + "\n");
-                }
+                Session.setCurrentLotList(s.get(UTILITY.AVAILABLE));
+                Session.setAllSpacesByLot(s.get(UTILITY.ALL));
             }
         }
 

@@ -17,6 +17,8 @@ public class Session {
 
     //holds the current List of Lot Objects. It can be accessed through the entire project by its static getter/setter
     private static List<Lot> currentLotList = new ArrayList<>();
+    //holds the current List of Lot Objects. It can be accessed through the entire project by its static getter/setter
+    private static List<Lot> allSpacesByLot = new ArrayList<>();
     //holds the current User Objects. It can be accessed through the entire project by its static getter/setter
     private static User currentUser = new User();
     //holds the current List of LogItem Objects. It can be accessed through the entire project by its static getter/setter
@@ -56,25 +58,11 @@ public class Session {
         Session.currentBuildings = currentBuildings;
     }
 
-    /**
-     * Extract a subset of the current log.
-     * @param hour the hour of the day in 24 hour format
-     * @param minutes the minute of the hour
-     * @param bufferInMinutes buffer for time
-     * @return subset of the current log
-     */
-    public static List<LogItem> getCurrentLogWithinRange(int hour, int minutes, int bufferInMinutes){
-        if(Session.getCurrentLog() == null) return null;
-        List<LogItem> subset = new ArrayList<>();
-        GregorianCalendar c;
-        for(LogItem item : Session.getCurrentLog()){
-            c = item.getTime();
-            int dayMinutesLog = (60 * c.get(Calendar.HOUR_OF_DAY)) + c.get(Calendar.MINUTE);
-            int dayMinutesParam = (60 * hour) + minutes;
-            if((dayMinutesLog >= (dayMinutesParam - bufferInMinutes)) && (dayMinutesLog <= (dayMinutesParam + bufferInMinutes))){
-                subset.add(item);
-            }
-        }
-        return subset;
+    public static List<Lot> getAllSpacesByLot() {
+        return allSpacesByLot;
+    }
+
+    public static void setAllSpacesByLot(List<Lot> allSpacesByLot) {
+        Session.allSpacesByLot = allSpacesByLot;
     }
 }

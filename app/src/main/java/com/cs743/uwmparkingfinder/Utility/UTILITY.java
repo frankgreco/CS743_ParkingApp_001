@@ -5,7 +5,14 @@ import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.cs743.uwmparkingfinder.Session.Session;
+import com.cs743.uwmparkingfinder.Structures.LogItem;
 import com.cs743.uwmparkingfinder.UI.R;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * Created by fbgrecojr on 11/21/15.
@@ -13,6 +20,8 @@ import com.cs743.uwmparkingfinder.UI.R;
 public class UTILITY {
 
     public static final String UBUNTU_SERVER_URL ="http://ec2-54-152-4-103.compute-1.amazonaws.com/scripts.php";
+    public static final int AVAILABLE = 0;
+    public static final int ALL = 1;
 
 
     /**
@@ -23,6 +32,28 @@ public class UTILITY {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    /**
+     * Extract a subset of the current log.
+     * @param hour the hour of the day in 24 hour format
+     * @param minutes the minute of the hour
+     * @param bufferInMinutes buffer for time
+     * @return subset of the current log
+     */
+    public static List<LogItem> getCurrentLogWithinRange(int hour, int minutes, int bufferInMinutes){
+        if(Session.getCurrentLog() == null) return null;
+        List<LogItem> subset = new ArrayList<>();
+        GregorianCalendar c;
+        for(LogItem item : Session.getCurrentLog()){
+            c = item.getTime();
+            int dayMinutesLog = (60 * c.get(Calendar.HOUR_OF_DAY)) + c.get(Calendar.MINUTE);
+            int dayMinutesParam = (60 * hour) + minutes;
+            if((dayMinutesLog >= (dayMinutesParam - bufferInMinutes)) && (dayMinutesLog <= (dayMinutesParam + bufferInMinutes))){
+                subset.add(item);
+            }
+        }
+        return subset;
     }
 
     /**

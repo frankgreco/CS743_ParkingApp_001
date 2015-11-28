@@ -99,48 +99,19 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         String uiLotName = getResources().getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName()));
         selectedLotNameLabel_.setText("Lot:  " + uiLotName);
 
-        //get list of spaces in the selected lot
-        Space[] spaces=getSpacesList();
+        finishOnCreate();
+    }
 
-        if (spaces!=null) {
-
-            //create and set custom array adapter
-            adapter = new SpacesAdapter(this, R.layout.activity_spotlistview, spaces);
-            parkingSpotStatusList_.setAdapter(adapter);
-
-        } else {
-            System.out.println("ERROR: No parking spots found for " + selectedLot_.getParkingLotName());
+    private void finishOnCreate() {
+        if(UTILITY.isOnline(getApplicationContext())){
+            RequestPackage p = new RequestPackage();
+            p.setMethod("GET");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
+            p.setParam("query", "available");
+            new RefreshSpaces().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+        }else{
+            //connection offline
         }
-
-
-        tracker.start(new LocationTracker.LocationUpdateListener() {
-            @Override
-            public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
-                NumberFormat formatter = new DecimalFormat("#0.00000");
-                //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
-                Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
-                Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
-                Space[] spaces=null;
-                //get updated information from backend - STORED IN Session.getCurrentLotList();
-                if(UTILITY.isOnline(getApplicationContext())){
-                    //get list of spaces in the selected lot
-                    //this should be a call to the backend, so it will need the if online logic...eventually
-                    spaces=getSpacesList();
-                }else{
-                    Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
-                }
-                //clear the current spots from the list
-                adapter.clear();
-                if(spaces!=null) {
-                    //add new spaces to adapter
-                    adapter.addAll(spaces);
-                    //refresh the view
-                    adapter.notifyDataSetChanged();
-                } else {
-                    //I feel like we shoul put a warning...maybe if we have time!
-                }
-            }
-        });
     }
 
     private Space[] getSpacesList() {
@@ -178,8 +149,13 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void addContentView(View view, ViewGroup.LayoutParams params) {
+        super.addContentView(view, params);
+    }
+
     /* used https://github.com/codepath/android_guides/wiki/Using-an-ArrayAdapter-with-ListView to help
-    get the custom arrayadapter working*/
+        get the custom arrayadapter working*/
     private class SpacesAdapter extends ArrayAdapter<Space> {
 
         public SpacesAdapter (Context context, int layoutResourceId, Space[] spaces) {
@@ -214,4 +190,79 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         }
     }
 
+    private class RefreshSpaces extends AsyncTask<RequestPackage, String, List<List<Lot>>> {
+        @Override
+        protected List<List<Lot>> doInBackground(RequestPackage... params) {
+
+            String content = HttpManager.getData(params[0]);
+
+            return JSONParser.parseLotFeed(content);
+        }
+
+        @Override
+        protected void onPostExecute(List<List<Lot>> s) {
+
+            if(s != null){
+                Session.setCurrentLotList(s.get(UTILITY.AVAILABLE));
+                Session.setAllSpacesByLot(s.get(UTILITY.ALL));
+            }
+
+            finishOnCreate();
+        }
+
+        private void finishOnCreate(){
+            //get list of spaces in the selected lot
+            //find index of spaces
+            List<Space> spaces = new ArrayList<>();
+            int i;
+            for(i = 0; i< Session.getAllSpacesByLot().size(); ++i){
+                String lot_name = getString(UTILITY.convertDbLotNameToUINameID(Session.getAllSpacesByLot().get(i).getName()));
+                if(lot_name.equalsIgnoreCase(selectedLot_.getParkingLotName())){
+                    spaces = Session.getAllSpacesByLot().get(i).getSpaces();
+                    break;
+                }
+            }
+
+            if (spaces.size() > 0) {
+
+                //create and set custom array adapter
+                Space[] toPass = new Space[spaces.size()];
+                adapter = new SpacesAdapter(getApplicationContext(), R.layout.activity_spotlistview, spaces.toArray(toPass));
+                parkingSpotStatusList_.setAdapter(adapter);
+
+            } else {
+                System.out.println("ERROR: No parking spots found for " + selectedLot_.getParkingLotName());
+            }
+
+
+            tracker.start(new LocationTracker.LocationUpdateListener() {
+                @Override
+                public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
+                    NumberFormat formatter = new DecimalFormat("#0.00000");
+                    //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
+                    Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
+                    Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
+                    Space[] spaces=null;
+                    //get updated information from backend - STORED IN Session.getCurrentLotList();
+                    if(UTILITY.isOnline(getApplicationContext())){
+                        //get list of spaces in the selected lot
+                        //this should be a call to the backend, so it will need the if online logic...eventually
+                        spaces=getSpacesList();
+                    }else{
+                        Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+                    }
+                    //clear the current spots from the list
+                    adapter.clear();
+                    if(spaces!=null) {
+                        //add new spaces to adapter
+                        adapter.addAll(spaces);
+                        //refresh the view
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        //I feel like we shoul put a warning...maybe if we have time!
+                    }
+                }
+            });
+        }
+    }
 }
