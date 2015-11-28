@@ -69,6 +69,7 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
     private SelectedParkingLot selectedLot_;        ///< Selected parking lot
     private Timer pollTimer_;                   ///< Poll timer
     private SpacesAdapter adapter;
+    private static boolean executeOnce = true;
 
     /*************************  Class Public Interface  ***********************/
 
@@ -207,21 +208,14 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
                 Session.setAllSpacesByLot(s.get(UTILITY.ALL));
             }
 
-            finishOnCreate();
+            if(MonitorParkingSpotStatusActivity.executeOnce) finishOnCreate();
         }
 
         private void finishOnCreate(){
+            MonitorParkingSpotStatusActivity.executeOnce = false;
             //get list of spaces in the selected lot
             //find index of spaces
-            List<Space> spaces = new ArrayList<>();
-            int i;
-            for(i = 0; i< Session.getAllSpacesByLot().size(); ++i){
-                String lot_name = getString(UTILITY.convertDbLotNameToUINameID(Session.getAllSpacesByLot().get(i).getName()));
-                if(lot_name.equalsIgnoreCase(selectedLot_.getParkingLotName())){
-                    spaces = Session.getAllSpacesByLot().get(i).getSpaces();
-                    break;
-                }
-            }
+            List<Space> spaces = updateSpaces();
 
             if (spaces.size() > 0) {
 
@@ -242,20 +236,23 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
                     //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
                     Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
                     Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
-                    Space[] spaces=null;
+
+                    List<Space> updatedSpaces = new ArrayList<>();
+
                     //get updated information from backend - STORED IN Session.getCurrentLotList();
                     if(UTILITY.isOnline(getApplicationContext())){
                         //get list of spaces in the selected lot
                         //this should be a call to the backend, so it will need the if online logic...eventually
-                        spaces=getSpacesList();
+                        updatedSpaces = updateSpaces();
                     }else{
                         Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
                     }
                     //clear the current spots from the list
                     adapter.clear();
-                    if(spaces!=null) {
+                    if(updateSpaces().size() > 0) {
                         //add new spaces to adapter
-                        adapter.addAll(spaces);
+                        Space[] toPass = new Space[updatedSpaces.size()];
+                        adapter.addAll(updatedSpaces.toArray(toPass));
                         //refresh the view
                         adapter.notifyDataSetChanged();
                     } else {
@@ -263,6 +260,19 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
                     }
                 }
             });
+        }
+
+        private List<Space> updateSpaces() {
+            List<Space> spaces = new ArrayList<>();
+            int i;
+            for(i = 0; i< Session.getAllSpacesByLot().size(); ++i){
+                String lot_name = getString(UTILITY.convertDbLotNameToUINameID(Session.getAllSpacesByLot().get(i).getName()));
+                if(lot_name.equalsIgnoreCase(selectedLot_.getParkingLotName())){
+                    spaces = Session.getAllSpacesByLot().get(i).getSpaces();
+                    break;
+                }
+            }
+            return spaces;
         }
     }
 }
