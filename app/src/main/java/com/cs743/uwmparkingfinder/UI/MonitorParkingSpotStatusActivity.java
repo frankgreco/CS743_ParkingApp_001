@@ -14,10 +14,7 @@ package com.cs743.uwmparkingfinder.UI;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,10 +22,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,11 +41,8 @@ import com.cs743.uwmparkingfinder.Structures.Space;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.jar.Manifest;
 
 /****************************  Class Definitions  *****************************/
 
@@ -71,7 +63,7 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
     private SelectedParkingLot selectedLot_;        ///< Selected parking lot
     private Timer pollTimer_;                   ///< Poll timer
     private SpacesAdapter adapter;
-    private static boolean executeOnce = true;
+    private static boolean executeOnce;
 
     /*************************  Class Public Interface  ***********************/
 
@@ -85,6 +77,8 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_monitor_parking_spot_status);
+
+        executeOnce = true;
 
         //initialize tracker
         tracker = new ProviderLocationTracker(MonitorParkingSpotStatusActivity.this, ProviderLocationTracker.ProviderType.GPS);
@@ -149,9 +143,9 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
 
                 //set row background color to green=available and red=unavailable
                 if (getItem(position).isAvailable()) {
-                    convertView.setBackgroundColor(Color.GREEN);
+                    convertView.setBackgroundColor(UTILITY.getColor(this.getContext(), R.color.green));
                 } else {
-                    convertView.setBackgroundColor(Color.RED);
+                    convertView.setBackgroundColor(UTILITY.getColor(this.getContext(), R.color.red));
                 }
             }
             return convertView;
@@ -175,7 +169,9 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
                 Session.setAllSpacesByLot(s.get(UTILITY.ALL));
             }
 
-            if(MonitorParkingSpotStatusActivity.executeOnce) finishOnCreate();
+            if(MonitorParkingSpotStatusActivity.executeOnce){
+                finishOnCreate();
+            }
         }
 
         private void finishOnCreate(){
