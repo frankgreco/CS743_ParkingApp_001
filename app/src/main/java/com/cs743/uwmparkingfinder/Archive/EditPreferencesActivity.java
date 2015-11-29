@@ -1,10 +1,8 @@
-package com.cs743.uwmparkingfinder.UI;
+package com.cs743.uwmparkingfinder.Archive;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +16,7 @@ import android.widget.Toast;
 
 import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
 import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
+import com.cs743.uwmparkingfinder.UI.R;
 import com.cs743.uwmparkingfinder.Utility.UTILITY;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.User;

@@ -11,6 +11,8 @@
 package com.cs743.uwmparkingfinder.UI;
 
 /****************************    Include Files    *****************************/
+import android.app.ActionBar;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,7 +52,7 @@ import java.util.Timer;
 /**
  * Create a new monitor parking spot status screen activity class
  */
-public class MonitorParkingSpotStatusActivity extends AppCompatActivity
+public class MonitorParkingSpotStatusActivity extends AppCompatActivity implements View.OnClickListener
 {
     /*************************  Class Static Variables  ***********************/
 
@@ -58,12 +61,14 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
 
     /*************************  Class Member Variables  ***********************/
     private ProviderLocationTracker tracker;
-    private TextView selectedLotNameLabel_;         ///< Parking lot name label
+    //private TextView selectedLotNameLabel_;         ///< Parking lot name label
     private ListView parkingSpotStatusList_;        ///< List of parking spots
     private SelectedParkingLot selectedLot_;        ///< Selected parking lot
     private Timer pollTimer_;                   ///< Poll timer
     private SpacesAdapter adapter;
     private static boolean executeOnce;
+    private Button refresh;
+    private ProgressDialog _p;
 
     /*************************  Class Public Interface  ***********************/
 
@@ -84,19 +89,31 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         tracker = new ProviderLocationTracker(MonitorParkingSpotStatusActivity.this, ProviderLocationTracker.ProviderType.GPS);
 
         // Retrieve screen inputs
-        selectedLotNameLabel_ = (TextView)findViewById(R.id.selectedLotNameLabel);
+        //selectedLotNameLabel_ = (TextView)findViewById(R.id.selectedLotNameLabel);
         parkingSpotStatusList_ = (ListView)findViewById(R.id.parkingSpotStatusList);
+
+        //button
+        refresh = (Button) findViewById(R.id.refresh);
+        refresh.setOnClickListener(this);
 
         // Retrieve intent
         Intent intent = getIntent();
         selectedLot_ =
                 (SelectedParkingLot)intent.getSerializableExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA);
 
-        // Set parking lot name
-        String uiLotName = getResources().getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName()));
-        selectedLotNameLabel_.setText("Lot:  " + uiLotName);
+        getSupportActionBar().setTitle(getResources().getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName())));
 
         finishOnCreate();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch(v.getId()){
+            case R.id.refresh:
+                MonitorParkingSpotStatusActivity.executeOnce = true;
+                finishOnCreate();
+            break;
+        }
     }
 
     private void finishOnCreate() {
@@ -162,6 +179,13 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         }
 
         @Override
+        protected void onPreExecute() {
+            if(MonitorParkingSpotStatusActivity.executeOnce){
+                MonitorParkingSpotStatusActivity.this.set_p(UTILITY.controlProgressDialog(true, MonitorParkingSpotStatusActivity.this, MonitorParkingSpotStatusActivity.this.get_p(), "Updating Availability"));
+            }
+        }
+
+        @Override
         protected void onPostExecute(List<List<Lot>> s) {
 
             if(s != null){
@@ -206,16 +230,16 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
 
                         List<Space> updatedSpaces = new ArrayList<>();
                         //get updated information from backend - STORED IN Session.getCurrentLotList();
-                        if(UTILITY.isOnline(getApplicationContext())){
+                        if (UTILITY.isOnline(getApplicationContext())) {
                             //get list of spaces in the selected lot
                             //this should be a call to the backend, so it will need the if online logic...eventually
                             updatedSpaces = updateSpaces();
-                        }else{
+                        } else {
                             Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
                         }
                         //clear the current spots from the list
                         //adapter.clear();
-                        if(updateSpaces().size() > 0) {
+                        if (updateSpaces().size() > 0) {
                             Space[] toPass = new Space[updatedSpaces.size()];
                             adapter = new SpacesAdapter(getApplicationContext(), R.layout.activity_spotlistview, updatedSpaces.toArray(toPass));
                             parkingSpotStatusList_.setAdapter(adapter);
@@ -224,6 +248,10 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
                         }
                     }
                 });
+            }
+
+            if(MonitorParkingSpotStatusActivity.this.get_p().isShowing()){
+                MonitorParkingSpotStatusActivity.this.set_p(UTILITY.controlProgressDialog(false, MonitorParkingSpotStatusActivity.this, MonitorParkingSpotStatusActivity.this.get_p(), null));
             }
         }
 
@@ -239,5 +267,13 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
             }
             return spaces;
         }
+    }
+
+    public ProgressDialog get_p() {
+        return _p;
+    }
+
+    public void set_p(ProgressDialog _p) {
+        this._p = _p;
     }
 }
