@@ -11,6 +11,7 @@
 package com.cs743.uwmparkingfinder.UI;
 
 /****************************    Include Files    *****************************/
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -58,7 +59,7 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
 
     /*************************  Class Member Variables  ***********************/
     private ProviderLocationTracker tracker;
-    private TextView selectedLotNameLabel_;         ///< Parking lot name label
+    //private TextView selectedLotNameLabel_;         ///< Parking lot name label
     private ListView parkingSpotStatusList_;        ///< List of parking spots
     private SelectedParkingLot selectedLot_;        ///< Selected parking lot
     private Timer pollTimer_;                   ///< Poll timer
@@ -84,7 +85,7 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         tracker = new ProviderLocationTracker(MonitorParkingSpotStatusActivity.this, ProviderLocationTracker.ProviderType.GPS);
 
         // Retrieve screen inputs
-        selectedLotNameLabel_ = (TextView)findViewById(R.id.selectedLotNameLabel);
+        //selectedLotNameLabel_ = (TextView)findViewById(R.id.selectedLotNameLabel);
         parkingSpotStatusList_ = (ListView)findViewById(R.id.parkingSpotStatusList);
 
         // Retrieve intent
@@ -92,12 +93,12 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         selectedLot_ =
                 (SelectedParkingLot)intent.getSerializableExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA);
 
-        // Set parking lot name
-        String uiLotName = getResources().getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName()));
-        selectedLotNameLabel_.setText("Lot:  " + uiLotName);
+        getSupportActionBar().setTitle(getResources().getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName())));
 
         finishOnCreate();
     }
+
+
 
     private void finishOnCreate() {
         if(UTILITY.isOnline(getApplicationContext())){

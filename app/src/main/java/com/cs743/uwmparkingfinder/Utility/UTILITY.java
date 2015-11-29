@@ -52,6 +52,20 @@ public class UTILITY {
         }
     }
 
+    public static ProgressDialog controlProgressDialog(boolean show, Context context, ProgressDialog p, String message){
+        if(show){
+            p = new ProgressDialog(context);
+            p.setMessage(message);
+            p.setIndeterminate(false);
+            p.setCancelable(false);
+            p.show();
+        }
+        else{
+            p.dismiss();
+        }
+        return p;
+    }
+
     /**
      * Extract a subset of the current log.
      * @param hour the hour of the day in 24 hour format
