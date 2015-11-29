@@ -98,8 +98,6 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity
         finishOnCreate();
     }
 
-
-
     private void finishOnCreate() {
         if(UTILITY.isOnline(getApplicationContext())){
             RequestPackage p = new RequestPackage();
