@@ -133,13 +133,7 @@ public class RecommendParkingActivity extends AppCompatActivity
             // Save selected spot to log
            if(UTILITY.isOnline(getApplicationContext())){
                 User user= Session.getCurrentUser();
-                //Get Lot Object
-                Lot lot=null;
-                for(Lot l:Session.getCurrentLotList()) {
-                    if(l.getName().equalsIgnoreCase(currLotSelection_.getParkingLotName())) {
-                        lot=l;
-                    }
-                }
+
                 RequestPackage p= new RequestPackage();
                 p.setMethod("GET");
                 p.setUri(UTILITY.UBUNTU_SERVER_URL);

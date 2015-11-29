@@ -9,6 +9,7 @@ import android.os.Build;
 import android.support.v4.content.ContextCompat;
 
 import com.cs743.uwmparkingfinder.Session.Session;
+import com.cs743.uwmparkingfinder.Structures.Building;
 import com.cs743.uwmparkingfinder.Structures.LogItem;
 import com.cs743.uwmparkingfinder.UI.R;
 
@@ -73,6 +74,18 @@ public class UTILITY {
         }
         return subset;
     }
+
+    public static Building getBuildingFromString(String building) {
+        List<Building> bList=Session.getCurrentBuildings();
+
+        for(Building b:bList) {
+            if (b.getName().equalsIgnoreCase(building)) {
+                return b;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Converts the lot name from the database to a user-friendly name

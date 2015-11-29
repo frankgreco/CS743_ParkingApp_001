@@ -11,6 +11,7 @@
 package com.cs743.uwmparkingfinder.UI;
 
 /****************************    Include Files    *****************************/
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -26,14 +27,25 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cs743.uwmparkingfinder.Algorithm.Algorithm;
 import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
 import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
 import com.cs743.uwmparkingfinder.Parser.JSONParser;
 import com.cs743.uwmparkingfinder.Session.Session;
+import com.cs743.uwmparkingfinder.Structures.Building;
+import com.cs743.uwmparkingfinder.Structures.LogItem;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Utility.UTILITY;
+import com.cs743.uwmparkingfinder.Structures.ParkingRequest;
+import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+import com.cs743.uwmparkingfinder.Structures.User;
 
+import java.sql.Time;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.TimeZone;
 
 /****************************  Class Definitions  *****************************/
 
@@ -48,6 +60,8 @@ public class MainActivity extends AppCompatActivity
 
     private TextView welcomeMsg_;                   // Welcome mesage
     private ListView listView_;                     // Main menu
+    private int LOGS_MIN_THRESHOLD=3;               // minimum number of logs required to try and guess destination
+    private int LOGS_MAX_TIME_DIFF=5;               // Number of months from which to consider log entries for guessing destination
 
     /*************************  Class Public Interface  ***********************/
 
@@ -144,8 +158,48 @@ public class MainActivity extends AppCompatActivity
 
         // TODO:  Determine if should create a new preference or suggest based on past data
         // Need to create a new preference
-        Intent intent = new Intent(this, SelectParkingOptionsActivity.class);
-        startActivity(intent);
+
+        if (isOnline()){
+            //determine current time using UTC as time zone
+            Calendar cal=GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
+
+            RequestPackage p = new RequestPackage();
+            p.setMethod("GET");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
+            p.setParam("query", "log");
+            User user = Session.getCurrentUser();
+            p.setParam("username", user.getUsername());
+            p.setParam("day",String.valueOf(formatDay(cal.get(Calendar.DAY_OF_WEEK))));
+            new getLogItemServiceCall(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+        } else {
+            Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Returns the index of the day of week that matches the MySQL indexes for the days of the week.
+     * @param day the index of the day of week in a GregorianCalendar
+     * @return an integer representing the day of week using MySQL indexing for days of week.
+     */
+    public int formatDay(int day){
+        switch(day){
+            case 2:
+                return 0;
+            case 3:
+                return 1;
+            case 4:
+                return 2;
+            case 5:
+                return 3;
+            case 6:
+                return 4;
+            case 7:
+                return 5;
+            case 1:
+                return 6;
+            default:
+                return -1;
+        }
     }
 
     /**
@@ -224,6 +278,140 @@ public class MainActivity extends AppCompatActivity
         protected void onPreExecute()
         {
             System.out.println("Getting Information...");
+        }
+    }
+
+    private class getLogItemServiceCall extends AsyncTask<RequestPackage,String,List<LogItem>> {
+       Activity activity;
+
+        getLogItemServiceCall(Activity act) {
+            activity=act;
+        }
+
+        @Override
+        protected List<LogItem> doInBackground(RequestPackage... params) {
+            String content = HttpManager.getData(params[0]);
+            return JSONParser.parseLogFeed(content);
+        }
+        @Override
+        protected void onPostExecute(List<LogItem> logs) {
+            if (logs !=null) {
+                Session.setCurrentLog(logs);
+
+                //see if there is a destination in these log items
+                Building destBuilding=getLikelyDestination(logs);
+
+                //if no destination can be determined, go to SelectParkingOptionsActivity
+                if(destBuilding==null) {
+                    // Need to create a new preference
+                    doNoDestinationFound();
+                } else {
+
+                    //use destination to get a recommended parking spot
+                    String destination=destBuilding.getName();
+
+                    //get the current user
+                    User curUser=Session.getCurrentUser();
+
+                    int disORprice=curUser.getDistORprice();
+                    boolean outsideAllowed=curUser.isCovered();
+                    boolean disableParkNeeded=curUser.isHandicap();
+                    boolean electricParkNeeded=curUser.isElectric();
+                    ParkingRequest request = new ParkingRequest(destination, disORprice, outsideAllowed,
+                            disableParkNeeded, electricParkNeeded);
+
+                    SelectedParkingLot selectedLot = findParkingLot(request);
+
+                    selectedLot.setReason("You have previously gone to "+destination+" around this time. "+selectedLot.getReason());
+
+                    Intent intent = new Intent(activity, RecommendParkingActivity.class);
+                    intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, selectedLot);
+                    startActivity(intent);
+                }
+            } else {
+                doNoDestinationFound();
+            }
+        }
+
+        private void doNoDestinationFound() {
+            Intent intent = new Intent(activity, SelectParkingOptionsActivity.class);
+            startActivity(intent);
+        }
+
+        private SelectedParkingLot findParkingLot(ParkingRequest request)
+        {
+            // Compute recommended parking lot
+            Resources res = getResources();
+            Algorithm algorithm = Algorithm.getInstance();
+            List<Lot> sortedLots = algorithm.computeRecommendedLots(request);
+            if (sortedLots.size() == 0)
+            {
+                // No lots were found
+                return null;
+            }
+            else
+            {
+                String reason = res.getString(R.string.LOT_REASON_DIST);
+                if (Session.getCurrentUser().getDistORprice() > 50)
+                {
+                    reason = res.getString(R.string.LOT_REASON_COST);
+                }
+
+                return new SelectedParkingLot(sortedLots.get(0).getName(), reason, request.getDestination());
+            }
+        }
+
+        private Building getLikelyDestination(List<LogItem> logs) {
+            Building destBuilding=null;
+            if (logs.size()>LOGS_MIN_THRESHOLD) {
+                HashMap<String, Integer> buildings = new HashMap<>();
+                int maxNum = 0;
+                String destination = "";
+                Calendar cal = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
+                int curMonths = cal.get(Calendar.YEAR) * 12 + cal.get(Calendar.MONTH);
+                //get subset of logs with times within 30 minutes of the current time
+                List<LogItem> inRange = UTILITY.getCurrentLogWithinRange(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), 30);
+
+                for (LogItem item : inRange) {
+                    //get the time this log occurred
+                    GregorianCalendar time = item.getTime();
+                    int logMonths = time.get(Calendar.YEAR) * 12 + time.get(Calendar.MONTH);
+
+                    //only consider logs that occurred in the last few months
+                    if (curMonths - logMonths < LOGS_MAX_TIME_DIFF) {
+                        //get destination associated with this log entry
+                        String word = item.getKeyword();
+
+                        //if the map alread contains this building, increment number of occurrences
+                        if (!word.equalsIgnoreCase("HELLO") && !word.contains(",")) {
+                            if (buildings.containsKey(word)) {
+                                Integer oldVal = buildings.get(word);
+                                Integer newVal = oldVal + 1;
+                                buildings.put(word, newVal);
+
+                                //if this building has occurred the most, set it as the best
+                                if (newVal > maxNum) {
+                                    maxNum = newVal;
+                                    destination = word;
+                                }
+                            } else {
+                                //otherwise, add building to the map with count of one
+                                buildings.put(word, 1);
+                                if (1 > maxNum) {
+                                    maxNum = 1;
+                                    destination = word;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //if at least one building occurrs more than once
+                if (maxNum>1) {
+                    destBuilding=UTILITY.getBuildingFromString(destination);
+                }
+            }
+            return destBuilding;
         }
     }
 }
