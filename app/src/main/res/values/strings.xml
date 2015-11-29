@@ -1,6 +1,6 @@
 <resources>
     <!-- App Name -->
-    <string name="app_name">UWMParkingFinder</string>
+    <string name="app_name">Choose An Option</string>
 
     <!-- Welcome Message -->
     <string name="welcomeTitle">Welcome to the UWM Parking Locator App!</string>
