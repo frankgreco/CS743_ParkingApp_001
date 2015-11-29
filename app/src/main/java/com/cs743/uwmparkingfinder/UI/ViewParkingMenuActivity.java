@@ -87,7 +87,7 @@ public class ViewParkingMenuActivity extends AppCompatActivity
 
                 System.out.println("Got item " +itemPosition + ", value " + itemValue + " (" + dbName + ")");
 
-                SelectedParkingLot curLot = new SelectedParkingLot(dbName,"Selected by User");
+                SelectedParkingLot curLot = new SelectedParkingLot(dbName,"Selected by User","");
                 Intent intent = new Intent(ViewParkingMenuActivity.this,MonitorParkingLotActivity.class);
                 intent.putExtra(ViewParkingMenuActivity.PREFERENCES_INTENT_DATA,curLot);
                 startActivity(intent);

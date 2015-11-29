@@ -145,7 +145,7 @@ public class RecommendParkingActivity extends AppCompatActivity
                 p.setUri(UTILITY.UBUNTU_SERVER_URL);
                 p.setParam("query", "insert");
                 p.setParam("username", user.getUsername());
-                p.setParam("keyword", lot==null?"":lot.getKeywords().toString());
+                p.setParam("keyword", currLotSelection_.getDestination()==null?"":currLotSelection_.getDestination());
                 p.setParam("lotName",currLotSelection_.getParkingLotName());
                 p.setParam("length", "500");
                 new SaveLogItemToDatabase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,p);
