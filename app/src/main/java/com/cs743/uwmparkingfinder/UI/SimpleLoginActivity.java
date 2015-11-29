@@ -47,7 +47,7 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
     private EditText userName;
     private EditText password;
     private Button login;
-    private RelativeLayout image, label;
+    private RelativeLayout image;
     private LinearLayout input, button;
     private Animation fadeInImage, fadeInButton, bottomUp;
     private TextInputLayout inputLayoutName,inputLayoutPassword;
@@ -72,7 +72,6 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         hiddenPanel = (ViewGroup)findViewById(R.id.input);
         inputLayoutName = (TextInputLayout) findViewById(R.id.text_input_username);
         inputLayoutPassword = (TextInputLayout) findViewById(R.id.text_input_password);
-        label = (RelativeLayout) findViewById(R.id.label);
 
         //GET UI ELEMENTS
         userName = (EditText) findViewById(R.id.userName);
@@ -102,7 +101,6 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         fadeInButton.setStartOffset((SECOND + HALF_SECOND) * 1);
         fadeInButton.setDuration(SECOND * 2);
         button.setAnimation(fadeInButton);
-        label.setAnimation(fadeInButton);
         hiddenPanel.startAnimation(bottomUp);
         hiddenPanel.setVisibility(View.VISIBLE);
 
