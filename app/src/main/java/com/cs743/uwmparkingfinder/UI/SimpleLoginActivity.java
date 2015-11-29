@@ -7,10 +7,15 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.method.KeyListener;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -42,11 +47,13 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
     private EditText userName;
     private EditText password;
     private Button login;
-    private RelativeLayout image;
+    private RelativeLayout image, label;
     private LinearLayout input, button;
     private Animation fadeInImage, fadeInButton, bottomUp;
+    private TextInputLayout inputLayoutName,inputLayoutPassword;
     private ViewGroup hiddenPanel;
     private static final int SECOND = 1000;
+    private static final int HALF_SECOND = 500;
 
     //create a Progress Dialog to be used throughout Activity
     private ProgressDialog p;
@@ -63,6 +70,9 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         fadeInImage.setInterpolator(new AccelerateInterpolator()); //and this
         bottomUp.setInterpolator(new DecelerateInterpolator());
         hiddenPanel = (ViewGroup)findViewById(R.id.input);
+        inputLayoutName = (TextInputLayout) findViewById(R.id.text_input_username);
+        inputLayoutPassword = (TextInputLayout) findViewById(R.id.text_input_password);
+        label = (RelativeLayout) findViewById(R.id.label);
 
         //GET UI ELEMENTS
         userName = (EditText) findViewById(R.id.userName);
@@ -75,8 +85,8 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         //SET UI PROPERTIES
         userName.setCursorVisible(false);
         password.setCursorVisible(false);
-        userName.setHint("Username");
         password.setHint("Password");
+        userName.setHint("Username");
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -89,9 +99,10 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         //ANIMATIONS
         fadeInImage.setDuration(SECOND * 2);
         image.setAnimation(fadeInImage);
-        fadeInButton.setStartOffset(SECOND * 2);
+        fadeInButton.setStartOffset((SECOND + HALF_SECOND) * 1);
         fadeInButton.setDuration(SECOND * 2);
         button.setAnimation(fadeInButton);
+        label.setAnimation(fadeInButton);
         hiddenPanel.startAnimation(bottomUp);
         hiddenPanel.setVisibility(View.VISIBLE);
 
@@ -104,10 +115,9 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         switch (v.getId()) {
             case R.id.login:
                 if(getUserName().getText().toString().equals("") || getUserName().getText().toString().equals(" ")){
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(SimpleLoginActivity.this);
-                    alertDialogBuilder.setMessage("Enter Your User Name");
-                    alertDialogBuilder.setPositiveButton("Got it", null);
-                    alertDialogBuilder.create().show();
+                    inputLayoutName.setError("enter username");
+                }else if(getPassword().getText().toString().equals("") || getPassword().getText().toString().equals(" ")){
+                    inputLayoutPassword.setError("enter password");
                 }else{
                     //webservice
                     if (isOnline()) {
@@ -178,29 +188,26 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
+    private void requestFocus(View view) {
+        if (view.requestFocus()) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
+    }
+
     private class WebserviceCallOne extends AsyncTask<RequestPackage, String, User> {
         @Override
         protected User doInBackground(RequestPackage... params) {
-
             String content = HttpManager.getData(params[0]);
-
             return JSONParser.parseUserFeed(content);
         }
 
         @Override
-        protected void onProgressUpdate(String... values) {
-
-        }
-
-        @Override
         protected void onPostExecute(User s) {
-
             Session.setCurrentUser(s);
-
             //if null, error stacktrace will print to the log. This is expected!!
             if(Session.getCurrentUser() == null){ //username was incorrect
                 SimpleLoginActivity.controlProgressDialog(false, null, SimpleLoginActivity.this.getP(), null);
-                Toast.makeText(getApplicationContext(), "That username does not exist", Toast.LENGTH_LONG).show();
+                inputLayoutName.setError("username does not exist");
             }else{ //check password
                 if(getPassword().getText().toString().equals(s.getPassword())){ //passwords match
                     getOtherInfoFromWebservice();
@@ -209,7 +216,7 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
                     SimpleLoginActivity.controlProgressDialog(false, null, SimpleLoginActivity.this.getP(), null);
                 }else{
                     SimpleLoginActivity.controlProgressDialog(false, null, SimpleLoginActivity.this.getP(), null);
-                    Toast.makeText(getApplicationContext(), "password is incorrect", Toast.LENGTH_LONG).show();
+                    inputLayoutPassword.setError("password incorrect");
                 }
             }
         }
@@ -223,23 +230,12 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
     private class WebserviceCallTwo extends AsyncTask<RequestPackage, String, List<Building>> {
         @Override
         protected List<Building> doInBackground(RequestPackage... params) {
-
             String content = HttpManager.getData(params[0]);
-
             return JSONParser.parseBuildingFeed(content);
         }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-        }
-
         @Override
         protected void onPostExecute(List<Building> s) {
             Session.setCurrentBuildings(s);
-        }
-
-        @Override
-        protected void onPreExecute() {
         }
     }
 
