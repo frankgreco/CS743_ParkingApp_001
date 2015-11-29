@@ -109,7 +109,6 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
     }
 
     public void onClick(View v) {
-        // TODO Auto-generated method stub
         switch (v.getId()) {
             case R.id.login:
                 if(getUserName().getText().toString().equals("") || getUserName().getText().toString().equals(" ")){

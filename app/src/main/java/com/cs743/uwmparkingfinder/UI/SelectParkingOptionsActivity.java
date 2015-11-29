@@ -169,7 +169,7 @@ public class SelectParkingOptionsActivity extends AppCompatActivity
                 reason = res.getString(R.string.LOT_REASON_COST);
             }
 
-            return new SelectedParkingLot(sortedLots.get(0).getName(), reason);
+            return new SelectedParkingLot(sortedLots.get(0).getName(), reason,request.getDestination());
         }
     }
 }

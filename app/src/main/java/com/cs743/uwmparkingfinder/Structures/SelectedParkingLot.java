@@ -30,7 +30,7 @@ public class SelectedParkingLot implements Serializable
 
     private String parkingLotName_;             ///< Selected parking lot name
     private String reason_;                     ///< Reason why lot was chosen
-
+    private String destination_;
     /*************************  Class Public Interface  ***********************/
 
     /**
@@ -38,10 +38,11 @@ public class SelectedParkingLot implements Serializable
      * @param name Parking lot name
      * @param reason Reason for selecting parking lot
      */
-    public SelectedParkingLot(String name, String reason)
+    public SelectedParkingLot(String name, String reason, String destination)
     {
         parkingLotName_ = name;
         reason_ = reason;
+        destination_=destination;
     }
 
     /**
@@ -76,6 +77,12 @@ public class SelectedParkingLot implements Serializable
         return success;
     }
 
+    public boolean setDestination(String building) {
+        boolean success=true;
+        destination_=building;
+        return success;
+    }
+
     /**
      * Get parking lot name
      *
@@ -96,6 +103,8 @@ public class SelectedParkingLot implements Serializable
         return reason_;
     }
 
+    public String getDestination() {return destination_;}
+
     /************************  Class Private Interface  ***********************/
 
     /**
@@ -105,5 +114,6 @@ public class SelectedParkingLot implements Serializable
     {
         parkingLotName_ = null;
         reason_ = null;
+        destination_=null;
     }
 }
