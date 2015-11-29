@@ -6,11 +6,20 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +42,11 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
     private EditText userName;
     private EditText password;
     private Button login;
-    private TextView title;
+    private RelativeLayout image;
+    private LinearLayout input, button;
+    private Animation fadeInImage, fadeInButton, bottomUp;
+    private ViewGroup hiddenPanel;
+    private static final int SECOND = 1000;
 
     //create a Progress Dialog to be used throughout Activity
     private ProgressDialog p;
@@ -43,18 +56,46 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_simple_login);
 
+        //INITIALIZE ANIMATION ITEMS
+        fadeInImage = new AlphaAnimation(0, 1);
+        fadeInButton = new AlphaAnimation(0, 1);
+        bottomUp = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bottom_up_animation);
+        fadeInImage.setInterpolator(new AccelerateInterpolator()); //and this
+        bottomUp.setInterpolator(new DecelerateInterpolator());
+        hiddenPanel = (ViewGroup)findViewById(R.id.input);
+
+        //GET UI ELEMENTS
         userName = (EditText) findViewById(R.id.userName);
-        userName.setHint("Username");
-        userName.requestFocus();
-
         password = (EditText) findViewById(R.id.password);
-        password.setHint("Password");
-
         login = (Button) findViewById(R.id.login);
-        title = (TextView) findViewById(R.id.title);
+        image = (RelativeLayout) findViewById(R.id.image);
+        input = (LinearLayout) findViewById(R.id.input);
+        button = (LinearLayout) findViewById(R.id.button);
 
-        title.setTextSize(24);
+        //SET UI PROPERTIES
+        userName.setCursorVisible(false);
+        password.setCursorVisible(false);
+        userName.setHint("Username");
+        password.setHint("Password");
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                userName.setCursorVisible(true);
+                password.setCursorVisible(true);
+                userName.requestFocus();
+            }
+        }, SimpleLoginActivity.SECOND * 3);
 
+        //ANIMATIONS
+        fadeInImage.setDuration(SECOND * 2);
+        image.setAnimation(fadeInImage);
+        fadeInButton.setStartOffset(SECOND * 2);
+        fadeInButton.setDuration(SECOND * 2);
+        button.setAnimation(fadeInButton);
+        hiddenPanel.startAnimation(bottomUp);
+        hiddenPanel.setVisibility(View.VISIBLE);
+
+        //ON CLICK LISTENERS
         login.setOnClickListener(this);
     }
 
