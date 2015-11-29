@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
     private void processFindParkingSelection() {
         System.out.println("Processing find parking selection");
 
-       if (isOnline()){
+       if (UTILITY.isOnline(getApplicationContext())){
             //determine current time using UTC as time zone
             Calendar cal=GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
             //get logs from database and determine destination
@@ -305,9 +305,6 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
         @Override
         protected void onPreExecute() {
             MainActivity.this.set_p(UTILITY.controlProgressDialog(true, MainActivity.this, MainActivity.this.get_p(), "Saving....."));
-        protected void onPreExecute()
-        {
-            System.out.println("Getting Information...");
         }
     }
 
