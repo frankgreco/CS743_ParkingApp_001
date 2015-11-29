@@ -175,7 +175,7 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
 
         @Override
         protected void onPreExecute() {
-            SimpleLoginActivity.this.setP(SimpleLoginActivity.controlProgressDialog(true, SimpleLoginActivity.this, p, "Getting Information..."));
+            SimpleLoginActivity.this.setP(SimpleLoginActivity.controlProgressDialog(true, SimpleLoginActivity.this, p, "Attempting Login..."));
         }
     }
 

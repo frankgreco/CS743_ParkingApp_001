@@ -27,4 +27,18 @@
         android:layout_below="@id/selectedLotNameLabel"
         android:layout_alignParentStart="true" />
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="20dp">
+
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/refresh"
+            android:background="@drawable/refresh_button"
+            android:layout_gravity="bottom|right"/>
+
+    </FrameLayout>
+
 </RelativeLayout>
