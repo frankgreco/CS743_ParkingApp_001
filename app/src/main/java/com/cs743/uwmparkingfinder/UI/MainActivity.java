@@ -12,7 +12,9 @@ package com.cs743.uwmparkingfinder.UI;
 
 /****************************    Include Files    *****************************/
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.ConnectivityManager;
@@ -32,7 +34,6 @@ import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
 import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
 import com.cs743.uwmparkingfinder.Parser.JSONParser;
 import com.cs743.uwmparkingfinder.Session.Session;
-import com.cs743.uwmparkingfinder.Structures.Building;
 import com.cs743.uwmparkingfinder.Structures.LogItem;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Utility.UTILITY;
@@ -40,7 +41,6 @@ import com.cs743.uwmparkingfinder.Structures.ParkingRequest;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
 import com.cs743.uwmparkingfinder.Structures.User;
 
-import java.sql.Time;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -156,20 +156,17 @@ public class MainActivity extends AppCompatActivity
     {
         System.out.println("Processing find parking selection");
 
-        // TODO:  Determine if should create a new preference or suggest based on past data
-        // Need to create a new preference
-
-        if (isOnline()){
+       if (isOnline()){
             //determine current time using UTC as time zone
             Calendar cal=GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
-
+            //get logs from database and determine destination
             RequestPackage p = new RequestPackage();
             p.setMethod("GET");
             p.setUri(UTILITY.UBUNTU_SERVER_URL);
             p.setParam("query", "log");
             User user = Session.getCurrentUser();
             p.setParam("username", user.getUsername());
-            p.setParam("day",String.valueOf(formatDay(cal.get(Calendar.DAY_OF_WEEK))));
+            p.setParam("day",String.valueOf(getDayOfWeekIndex(cal.get(Calendar.DAY_OF_WEEK))));
             new getLogItemServiceCall(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
         } else {
             Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
@@ -181,7 +178,7 @@ public class MainActivity extends AppCompatActivity
      * @param day the index of the day of week in a GregorianCalendar
      * @return an integer representing the day of week using MySQL indexing for days of week.
      */
-    public int formatDay(int day){
+    public int getDayOfWeekIndex(int day){
         switch(day){
             case 2:
                 return 0;
@@ -281,11 +278,16 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Gets the list of log entries form the database and uses the list to determine a destination
+     */
     private class getLogItemServiceCall extends AsyncTask<RequestPackage,String,List<LogItem>> {
-       Activity activity;
+        private Activity activity;
+        private String destBuilding;
 
         getLogItemServiceCall(Activity act) {
             activity=act;
+            destBuilding=null;
         }
 
         @Override
@@ -296,48 +298,87 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(List<LogItem> logs) {
             if (logs !=null) {
+                //set currentLog list
                 Session.setCurrentLog(logs);
 
                 //see if there is a destination in these log items
-                Building destBuilding=getLikelyDestination(logs);
+                destBuilding=getLikelyDestination(logs);
 
                 //if no destination can be determined, go to SelectParkingOptionsActivity
                 if(destBuilding==null) {
-                    // Need to create a new preference
                     doNoDestinationFound();
                 } else {
-
-                    //use destination to get a recommended parking spot
-                    String destination=destBuilding.getName();
-
-                    //get the current user
-                    User curUser=Session.getCurrentUser();
-
-                    int disORprice=curUser.getDistORprice();
-                    boolean outsideAllowed=curUser.isCovered();
-                    boolean disableParkNeeded=curUser.isHandicap();
-                    boolean electricParkNeeded=curUser.isElectric();
-                    ParkingRequest request = new ParkingRequest(destination, disORprice, outsideAllowed,
-                            disableParkNeeded, electricParkNeeded);
-
-                    SelectedParkingLot selectedLot = findParkingLot(request);
-
-                    selectedLot.setReason("You have previously gone to "+destination+" around this time. "+selectedLot.getReason());
-
-                    Intent intent = new Intent(activity, RecommendParkingActivity.class);
-                    intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, selectedLot);
-                    startActivity(intent);
+                    //confirm destination with user
+                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                    builder
+                            .setTitle("Destination")
+                            .setMessage("You have previously gone to "+destBuilding+" around this time. Are you going to "+destBuilding+"?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //if guess is right, get a recommendation using the guessed destination
+                                    doGuessedRight();
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //if the user is not going to the guessed destination, let user select destination
+                                    doNoDestinationFound();
+                                }
+                            })
+                            .show();
                 }
             } else {
+                //if there are no logs, let the user select a destination
                 doNoDestinationFound();
             }
         }
 
+        /**
+         * Open a new SelectParkingOptionsActivity so the user can select a destination
+         */
         private void doNoDestinationFound() {
             Intent intent = new Intent(activity, SelectParkingOptionsActivity.class);
             startActivity(intent);
         }
 
+        /**
+         * Uses the destBuilding to get a recommended parking spot and starts a new RecommendParkingActivity.
+         * If destBuilding is null, a new SelectParkingOptionsActivity is started.
+         */
+        private void doGuessedRight() {
+           if(destBuilding!=null) {
+               String destination = destBuilding;
+
+               //get the current user and the user's preferences
+               User curUser = Session.getCurrentUser();
+               int disORprice = curUser.getDistORprice();
+               boolean outsideAllowed = curUser.isCovered();
+               boolean disableParkNeeded = curUser.isHandicap();
+               boolean electricParkNeeded = curUser.isElectric();
+
+               //create a new ParkingRequest with the user's preferences
+               ParkingRequest request = new ParkingRequest(destination, disORprice, outsideAllowed,
+                       disableParkNeeded, electricParkNeeded);
+
+               //use the algorithm to rank the parking spots
+               SelectedParkingLot selectedLot = findParkingLot(request);
+
+               //create a new RecommendParkingActivity
+               Intent intent = new Intent(activity, RecommendParkingActivity.class);
+               intent.putExtra(RecommendParkingActivity.PREFERENCES_INTENT_DATA, selectedLot);
+               startActivity(intent);
+           } else {
+               doNoDestinationFound();
+           }
+        }
+
+        /**
+         * Uses the user's preferences to get a recommendation using Algorithm
+         * @param request The object holding the user's parking preferences
+         * @return A SelectedParkingLot object representing the recommended parking lot
+         */
         private SelectedParkingLot findParkingLot(ParkingRequest request)
         {
             // Compute recommended parking lot
@@ -361,14 +402,24 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        private Building getLikelyDestination(List<LogItem> logs) {
-            Building destBuilding=null;
+        /**
+         * Determines the building the user has gone to the most around this time of day. Ties are broken
+         * arbitrarily.
+         * @param logs the log entries that occurr on the current day of teh week.
+         * @return A String that is either null or the destination determined from the log entries
+         */
+        private String getLikelyDestination(List<LogItem> logs) {
+            String strBuilding=null;
+
+            //want to only guess if there are enough log entries to show a pattern
             if (logs.size()>LOGS_MIN_THRESHOLD) {
                 HashMap<String, Integer> buildings = new HashMap<>();
                 int maxNum = 0;
                 String destination = "";
+
                 Calendar cal = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
                 int curMonths = cal.get(Calendar.YEAR) * 12 + cal.get(Calendar.MONTH);
+
                 //get subset of logs with times within 30 minutes of the current time
                 List<LogItem> inRange = UTILITY.getCurrentLogWithinRange(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), 30);
 
@@ -382,14 +433,15 @@ public class MainActivity extends AppCompatActivity
                         //get destination associated with this log entry
                         String word = item.getKeyword();
 
-                        //if the map alread contains this building, increment number of occurrences
+                        //if the map already contains this building, increment number of occurrences
+                        //TODO: remove entries in database that were for testing purposes only, e.g., the ones with HELLO as keyword or test as log
                         if (!word.equalsIgnoreCase("HELLO") && !word.contains(",")) {
                             if (buildings.containsKey(word)) {
                                 Integer oldVal = buildings.get(word);
                                 Integer newVal = oldVal + 1;
                                 buildings.put(word, newVal);
 
-                                //if this building has occurred the most, set it as the best
+                                //if this building has occurred the most, set it as the best guess
                                 if (newVal > maxNum) {
                                     maxNum = newVal;
                                     destination = word;
@@ -408,10 +460,10 @@ public class MainActivity extends AppCompatActivity
 
                 //if at least one building occurrs more than once
                 if (maxNum>1) {
-                    destBuilding=UTILITY.getBuildingFromString(destination);
+                    strBuilding=destination;
                 }
             }
-            return destBuilding;
+            return strBuilding;
         }
     }
 }
