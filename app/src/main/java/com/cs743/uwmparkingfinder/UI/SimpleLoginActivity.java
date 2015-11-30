@@ -54,6 +54,7 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
     private ViewGroup hiddenPanel;
     private static final int SECOND = 1000;
     private static final int HALF_SECOND = 500;
+    private static final int QUARTER_SECOND = 250;
 
     //create a Progress Dialog to be used throughout Activity
     private ProgressDialog p;
@@ -98,7 +99,7 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         //ANIMATIONS
         fadeInImage.setDuration(SECOND * 2);
         image.setAnimation(fadeInImage);
-        fadeInButton.setStartOffset(SECOND * 2);
+        fadeInButton.setStartOffset(SECOND + HALF_SECOND + QUARTER_SECOND);
         fadeInButton.setDuration(SECOND * 2);
         button.setAnimation(fadeInButton);
         hiddenPanel.startAnimation(bottomUp);
