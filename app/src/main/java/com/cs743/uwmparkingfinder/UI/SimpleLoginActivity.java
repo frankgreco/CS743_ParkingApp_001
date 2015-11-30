@@ -97,7 +97,7 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         }, SimpleLoginActivity.SECOND * 3);
 
         //ANIMATIONS
-        fadeInImage.setDuration(SECOND * 2);
+        fadeInImage.setDuration(SECOND * 3);
         image.setAnimation(fadeInImage);
         fadeInButton.setStartOffset(SECOND + HALF_SECOND + QUARTER_SECOND);
         fadeInButton.setDuration(SECOND * 2);

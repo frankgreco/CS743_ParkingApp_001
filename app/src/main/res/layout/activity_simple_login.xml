@@ -14,7 +14,7 @@ xmlns:tools="http://schemas.android.com/tools"
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="4"
+        android:layout_weight="5"
         android:id="@+id/image"
         android:layout_gravity="top|center_horizontal">
 
@@ -29,8 +29,7 @@ xmlns:tools="http://schemas.android.com/tools"
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="6"
-        android:padding="20dp"
+        android:layout_weight="5"
         android:orientation="vertical"
         android:layout_gravity="center">
 
@@ -83,7 +82,7 @@ xmlns:tools="http://schemas.android.com/tools"
                 android:layout_height="wrap_content"
                 android:text="Login"
                 android:background="@drawable/button_rounded_edges_black"
-                android:textColor="#000000"
+                android:textColor="#FFFFFF"
                 android:id="@+id/login" />
                 <!--android:layout_height="30dp"
                 android:background="@color/colorAccent"-->

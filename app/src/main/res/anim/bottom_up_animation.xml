@@ -2,7 +2,13 @@
 
 <set xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <translate android:fromYDelta="100%p"
+    <alpha
+        android:duration="1000"
+        android:fromAlpha="0.0"
+        android:startOffset="925"
+        android:toAlpha="1.0" />
+
+    <translate android:fromYDelta="75%p"
         android:toYDelta="0%p"
         android:fillAfter="true"
         android:startOffset="925"
