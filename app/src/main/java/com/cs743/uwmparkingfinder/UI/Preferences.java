@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -27,16 +28,19 @@ import com.cs743.uwmparkingfinder.Utility.UTILITY;
  *
  * NOTE: Backend is not updated in this Activity as local use is used. Upon logoff, backend is updated.
  */
-public class Preferences extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener, DialogInterface.OnClickListener{
+public class Preferences extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener, DialogInterface.OnShowListener{
 
     private TextView _topInfo;
     private android.text.Spanned _html;
     private Switch _covered, _handicap, _electric;
-    private Button _edit;
+    private Button _edit, _save;
     private SeekBar _seekBar;
     private EditText _first, _last, _username, _phone, _email, _password;
+    private TextInputLayout _firstLayout, _lastLayout, _usernameLayout, _phoneLayout, _emailLayout, _passwordLayout;
     private ProgressDialog _p;
     private String username;
+    private AlertDialog alertDialog;
+    private AlertDialog.Builder alertDialogBuilder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +123,12 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
                 _phone = (EditText) promptsView.findViewById(R.id.phone);
                 _email = (EditText) promptsView.findViewById(R.id.email);
                 _password = (EditText) promptsView.findViewById(R.id.password);
+                _firstLayout = (TextInputLayout) promptsView.findViewById(R.id.text_input_first);
+                _lastLayout = (TextInputLayout) promptsView.findViewById(R.id.text_input_last);
+                _usernameLayout = (TextInputLayout) promptsView.findViewById(R.id.text_input_username);
+                _phoneLayout = (TextInputLayout) promptsView.findViewById(R.id.text_input_phone);
+                _emailLayout = (TextInputLayout) promptsView.findViewById(R.id.text_input_email);
+                _passwordLayout = (TextInputLayout) promptsView.findViewById(R.id.text_input_password);
 
                 //Set UI element Properties
                 _first.setText(Session.getCurrentUser().getFirst());
@@ -127,34 +137,37 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
                 _phone.setText(Session.getCurrentUser().getPhone());
                 _email.setText(Session.getCurrentUser().getEmail());
                 _password.setText(Session.getCurrentUser().getPassword());
+                _firstLayout.setErrorEnabled(true);
+                _lastLayout.setErrorEnabled(true);
+                _usernameLayout.setErrorEnabled(true);
+                _phoneLayout.setErrorEnabled(true);
+                _emailLayout.setErrorEnabled(true);
+                _passwordLayout.setErrorEnabled(true);
 
                 // set dialog message
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Preferences.this);
+                alertDialogBuilder = new AlertDialog.Builder(Preferences.this);
                 alertDialogBuilder
                         .setView(promptsView)
                         .setCancelable(false)
-                        .setPositiveButton("Save", this)
-                        .setNegativeButton("Go Back", this)
-                        .show();
+                        .setPositiveButton("Save", null)
+                        .setNegativeButton("Go Back", null);
+
+                alertDialog = alertDialogBuilder.create();
+                alertDialog.setOnShowListener(this);
+                alertDialog.show();
 
                 break;
-        }
-    }
 
-    @Override
-    public void onClick(DialogInterface dialog, int which) {
-        switch(which){
             case AlertDialog.BUTTON_POSITIVE:
-                //error checking
-                if (!validateEntries()) {
-                    //do something
-                }else{
+                if(validateEntries()){
                     Session.getCurrentUser().setFirst(_first.getText().toString());
                     Session.getCurrentUser().setLast(_last.getText().toString());
                     Session.getCurrentUser().setUsername(_username.getText().toString());
                     Session.getCurrentUser().setPhone(_phone.getText().toString());
                     Session.getCurrentUser().setEmail(_email.getText().toString());
                     Session.getCurrentUser().setPassword(_password.getText().toString());
+
+                    alertDialog.dismiss();
 
                     //Update log on backend if username changes
                     if(!username.equals(Session.getCurrentUser().getUsername())){
@@ -166,6 +179,13 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
                 }
                 break;
         }
+    }
+
+    @Override
+    public void onShow(DialogInterface dialog) {
+        _save = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        _save.setId(AlertDialog.BUTTON_POSITIVE);
+        _save.setOnClickListener(this);
     }
 
     private void preBackend(){
@@ -183,16 +203,37 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
     }
 
     private boolean validateEntries(){
-        return validateBasicText(new String[]{_username.getText().toString(), _password.getText().toString(),
-                _last.getText().toString(), _first.getText().toString()}) && validatePhoneNumber(_phone.getText().toString())
-                && isValidEmailAddress(_email.getText().toString());
+        boolean toReturn = true;
+        if(!validateBasicText(_first.getText().toString())){
+            _firstLayout.setError("check syntax");
+            toReturn = false;
+        }
+        if(!validateBasicText(_last.getText().toString())){
+            _lastLayout.setError("check syntax");
+            toReturn = false;
+        }
+        if(!validateBasicText(_username.getText().toString())){
+            _usernameLayout.setError("check syntax");
+            toReturn = false;
+        }
+        if(!validatePhoneNumber(_phone.getText().toString())){
+            _phoneLayout.setError("check syntax");
+            toReturn = false;
+        }
+        if(!isValidEmailAddress(_email.getText().toString())){
+            _emailLayout.setError("check syntax");
+            toReturn = false;
+        }
+        if(!validateBasicText(_password.getText().toString())){
+            _passwordLayout.setError("check syntax");
+            toReturn = false;
+        }
+        return toReturn;
     }
 
-    private boolean validateBasicText(String[] string){
-        for(String item : string){
-            if(item.equals("") || containsSpace(item) || item.length() < 1){
-                return false;
-            }
+    private boolean validateBasicText(String string){
+        if(string.equals("") || containsSpace(string) || string.length() < 1){
+            return false;
         }
         return true;
     }
