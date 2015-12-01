@@ -74,7 +74,7 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        //do nothing
+        Session.getCurrentUser().setDistORprice(seekBar.getProgress());
     }
 
     @Override

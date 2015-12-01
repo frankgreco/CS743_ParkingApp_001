@@ -563,7 +563,10 @@ public class MonitorParkingLotActivity extends AppCompatActivity
                         Lot l = getLot();
 
                         //if within 50ft of destination, go to conclusion activity
-                        if (l != null && tracker.getLocation().distanceTo(l.getLocation()) < .015) {
+                        Location curLoc = new Location("");
+                        curLoc.setLatitude(newLoc.getLatitude());
+                        curLoc.setLongitude(newLoc.getLongitude());
+                        if (l != null && curLoc.distanceTo(l.getLocation()) < .015) {
                             tracker.stop();
                             startActivity(new Intent(MonitorParkingLotActivity.this, ConclusionActivity.class));
                         }
