@@ -114,7 +114,7 @@ public class Algorithm {
         //See my commented suggestions
         //
         //instead of preferences.getOptimization() use Session.getCurrentUser().getDistORprice();
-        int distORprice = (int)Math.floor((double)preferences.getOptimization() / 100.0 * 9.0); // distORprice ranges from 0 to 9
+        int distORprice = preferences.getOptimization(); // distORprice ranges from 0 to 9
         //instead of preferences.getOutsideParking() use Session.getCurrentUser().isCovered();
         boolean allowOutside = preferences.getOutsideParking();
         //instead of preferences.getHandicapRequired() use Session.getCurrentUser().isHandicap();
