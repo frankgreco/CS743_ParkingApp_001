@@ -84,8 +84,6 @@ xmlns:tools="http://schemas.android.com/tools"
                 android:background="@drawable/button_rounded_edges_black"
                 android:textColor="#FFFFFF"
                 android:id="@+id/login" />
-                <!--android:layout_height="30dp"
-                android:background="@color/colorAccent"-->
 
 
         </LinearLayout>

@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -152,11 +153,17 @@ public class MonitorParkingSpotStatusActivity extends AppCompatActivity implemen
             if (getItem(position)!=null) {
                 //get the TextView objects
                 TextView number = (TextView) convertView.findViewById(R.id.spotNumber);
-                TextView available = (TextView) convertView.findViewById(R.id.spotAvailable);
+                //TextView available = (TextView) convertView.findViewById(R.id.spotAvailable);
+                ImageView handicap = (ImageView) convertView.findViewById(R.id.handicap);
+                handicap.setVisibility(View.INVISIBLE);
+                ImageView electric = (ImageView) convertView.findViewById(R.id.electric);
+                electric.setVisibility(View.INVISIBLE);
 
                 //set the name and availability of the space
                 number.setText("Space: " + Integer.toString(getItem(position).getNumber()));
-                available.setText(getItem(position).isAvailable() ? "Available" : "Unavailable");
+                if(getItem(position).isElectric()) electric.setVisibility(View.VISIBLE);
+                if(getItem(position).isHandicap()) handicap.setVisibility(View.VISIBLE);
+                //available.setText(getItem(position).isAvailable() ? "Available" : "Unavailable");
 
                 //set row background color to green=available and red=unavailable
                 if (getItem(position).isAvailable()) {
