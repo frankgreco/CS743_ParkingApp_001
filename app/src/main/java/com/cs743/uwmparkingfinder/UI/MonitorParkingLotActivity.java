@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.cs743.uwmparkingfinder.Algorithm.Algorithm;
 import com.cs743.uwmparkingfinder.GPSLocation.LocationTracker;
 import com.cs743.uwmparkingfinder.GPSLocation.ProviderLocationTracker;
 import com.cs743.uwmparkingfinder.GPSLocation.*;
@@ -43,7 +44,9 @@ import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
 import com.cs743.uwmparkingfinder.Parser.JSONParser;
 import com.cs743.uwmparkingfinder.Session.Session;
 import com.cs743.uwmparkingfinder.Structures.Lot;
+import com.cs743.uwmparkingfinder.Structures.ParkingRequest;
 import com.cs743.uwmparkingfinder.Structures.SelectedParkingLot;
+import com.cs743.uwmparkingfinder.Structures.User;
 import com.cs743.uwmparkingfinder.Utility.UTILITY;
 
 /****************************  Class Definitions  *****************************/
@@ -54,7 +57,7 @@ import com.cs743.uwmparkingfinder.Utility.UTILITY;
 public class MonitorParkingLotActivity extends AppCompatActivity
 {
     /*************************  Class Static Variables  ***********************/
-
+    public static final String PREFERENCES_INTENT_DATA = "preferenceData";
     public static final int PARKING_LOT_OPACITY = 100;  ///< Opacity for overlays
 
     /// Polling timer interval (milliseconds)
@@ -77,7 +80,9 @@ public class MonitorParkingLotActivity extends AppCompatActivity
     private int totalSpots_;                    ///< Total number of parking spots available
     private int spotsRemaining_;                ///< Number of parking spots remaining
 
-    private Timer pollTimer_;                   ///< Poll timer
+    //private Timer pollTimer_;                   ///< Poll timer
+
+    private static boolean executeOnce;
 
     /*************************  Class Public Interface  ***********************/
 
@@ -91,6 +96,8 @@ public class MonitorParkingLotActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_monitor_parking_lot);
+
+        executeOnce=true;
 
         //initialize tracker
         tracker = new ProviderLocationTracker(MonitorParkingLotActivity.this, ProviderLocationTracker.ProviderType.GPS);
@@ -117,45 +124,14 @@ public class MonitorParkingLotActivity extends AppCompatActivity
         String uiLotName = getResources().getString(UTILITY.convertDbLotNameToUINameID(selectedLot_.getParkingLotName()));
         selectedLotNameLabel_.setText("Lot:  " + uiLotName);
 
+
         // Using SelectedParkingLot data, determine the number of spaces available and in total
         getParkingSpotCount();
-        getParkingSpotStatus();
 
         // Determine which parking lot image should be shown on this screen and display
         findAndDisplayParkingLotImage();
 
-        // Remainder of screen updates will be handled by onWindowFocusChanged()
-
-
-        //ideally call this method when the user initiates parking
-        if(PackageManager.PERMISSION_GRANTED != checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1340);
-        }else{
-            tracker.start(new LocationTracker.LocationUpdateListener() {
-                @Override
-                public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
-                    NumberFormat formatter = new DecimalFormat("#0.00000");
-                    //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
-                    Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
-                    Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
-                    //get updated information from backend - STORED IN Session.getCurrentLotList();
-                    if (UTILITY.isOnline(getApplicationContext())) {
-                        RequestPackage p = new RequestPackage();
-                        p.setMethod("GET");
-                        p.setUri(UTILITY.UBUNTU_SERVER_URL);
-                        p.setParam("query", "available");
-                        new WebserviceCallOne().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
-                    } else {
-                        Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
-                    }
-
-                    //DO OTHER STUFF EVERY SO OFTEN
-                    //CODE GOES HERE
-
-
-                }
-            });
-        }
+        finishOnCreate();
     }
 
 
@@ -164,7 +140,7 @@ public class MonitorParkingLotActivity extends AppCompatActivity
      *
      * @param hasFocus True if have focus, false otherwise
      */
-    @Override
+   /* @Override
     public void onWindowFocusChanged(boolean hasFocus)
     {
         // Get parking spot status
@@ -173,6 +149,7 @@ public class MonitorParkingLotActivity extends AppCompatActivity
         // Refresh screen
         refreshScreen();
     }
+*/
 
     /**
      * Called when user leaves activity.
@@ -183,22 +160,21 @@ public class MonitorParkingLotActivity extends AppCompatActivity
         super.onPause();
 
         // Stop timer
-        pollTimer_.cancel();
-
-        System.out.println("Timer canceled");
+        //pollTimer_.cancel();
+        tracker.stop();
+        System.out.println("Tracker canceled");
     }
-
     /**
      * Called when user re-enters activity
      */
-    @Override
+   @Override
     public void onResume()
     {
         super.onResume();
-
+        tracker.start();
         // Configure timer
-        pollTimer_ = new Timer();
-        pollTimer_.schedule(new MonitorLotPollTask(), 0, POLL_TIMER_INTERVAL_MSEC);
+       // pollTimer_ = new Timer();
+        //pollTimer_.schedule(new MonitorLotPollTask(), 0, POLL_TIMER_INTERVAL_MSEC);
     }
 
     /**
@@ -224,8 +200,13 @@ public class MonitorParkingLotActivity extends AppCompatActivity
      */
     private void getParkingSpotCount()
     {
-        // TODO:  IMPLEMENT FUNCTION
-        totalSpots_ = 100;
+        for(int i=0;i<Session.getCurrentLotList().size();i++) {
+            Lot lot=Session.getCurrentLotList().get(i);
+            if(lot.getName().equalsIgnoreCase(selectedLot_.getParkingLotName())) {
+                totalSpots_=lot.getNumSpaces();
+                break;
+            }
+        }
     }
 
     /**
@@ -236,10 +217,26 @@ public class MonitorParkingLotActivity extends AppCompatActivity
      */
     private void getParkingSpotStatus()
     {
-        // TODO:  IMPLEMENT FUNCTION
-        spotsRemaining_ = (spotsRemaining_ + 1) % totalSpots_;
+        for(int i=0;i<Session.getCurrentLotList().size();i++) {
+            Lot lot=Session.getCurrentLotList().get(i);
+            if(lot.getName().equalsIgnoreCase(selectedLot_.getParkingLotName())) {
+                spotsRemaining_=lot.getSpaces().size();
+                break;
+            }
+        }
     }
 
+    private void finishOnCreate() {
+        if (UTILITY.isOnline(getApplicationContext())) {
+            RequestPackage p = new RequestPackage();
+            p.setMethod("GET");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
+            p.setParam("query", "available");
+            new WebserviceCallOne().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+        } else {
+            Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+        }
+    }
     /**
      * Determine what parking lot image should be shown on the screen.
      *
@@ -436,7 +433,7 @@ public class MonitorParkingLotActivity extends AppCompatActivity
      *
      * Called by the poll timer thread.
      */
-    private void processPollTimerEvent()
+   /* private void processPollTimerEvent()
     {
         // TODO:  Should only perform timer processing if moved sufficient distance?
         // TODO:  What should happen when user is "close" to lot?
@@ -455,23 +452,44 @@ public class MonitorParkingLotActivity extends AppCompatActivity
                 refreshScreen();
             }
         });
-    }
+    }*/
 
     /**
      * Poll timer task class
      */
-    class MonitorLotPollTask extends TimerTask
-    {
+   // class MonitorLotPollTask extends TimerTask
+    //{
         /**
          * Poll timer timeout handler
          */
-        @Override
+     /*   @Override
         public void run()
         {
             processPollTimerEvent();
         }
+    }*/
+
+    private Lot getLot() {
+        for (int i=0;i<Session.getCurrentLotList().size();i++){
+            Lot lot = Session.getCurrentLotList().get(i);
+            if(lot.getName().equalsIgnoreCase(selectedLot_.getParkingLotName())) {
+                return lot;
+            }
+        }
+        return null;
     }
 
+    private void updateAvailability() {
+        if (UTILITY.isOnline(getApplicationContext())) {
+            RequestPackage p = new RequestPackage();
+            p.setMethod("GET");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
+            p.setParam("query", "available");
+            new WebserviceCallOne().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+        } else {
+            Toast.makeText(getApplicationContext(), "you are not connected to the internet", Toast.LENGTH_LONG).show();
+        }
+    }
 
     private class WebserviceCallOne extends AsyncTask<RequestPackage, String, List<List<Lot>>> {
         @Override
@@ -493,11 +511,103 @@ public class MonitorParkingLotActivity extends AppCompatActivity
                 Session.setCurrentLotList(s.get(UTILITY.AVAILABLE));
                 Session.setAllSpacesByLot(s.get(UTILITY.ALL));
             }
+
+            getParkingSpotStatus();
+
+            if(spotsRemaining_>0) {
+                refreshScreen();;
+            } else {
+                tracker.stop();
+                String destination = selectedLot_.getDestination();
+
+                //get the current user and the user's preferences
+                User curUser = Session.getCurrentUser();
+                int disORprice = curUser.getDistORprice();
+                boolean outsideAllowed = curUser.isCovered();
+                boolean disableParkNeeded = curUser.isHandicap();
+                boolean electricParkNeeded = curUser.isElectric();
+
+                //create a new ParkingRequest with the user's preferences
+                ParkingRequest request = new ParkingRequest(destination, disORprice, outsideAllowed,
+                        disableParkNeeded, electricParkNeeded);
+
+                //use the algorithm to rank the parking spots
+                SelectedParkingLot selectedLot = findParkingLot(request);
+
+                //create a new RecommendParkingActivity
+                Intent intent = new Intent(MonitorParkingLotActivity.this, RecommendParkingActivity.class);
+                intent.putExtra(MonitorParkingLotActivity.PREFERENCES_INTENT_DATA, selectedLot);
+                startActivity(intent);
+            }
+
+            if(MonitorParkingLotActivity.executeOnce) {
+               finishOnCreate();
+            }
         }
 
-        @Override
-        protected void onPreExecute() {
+        private void finishOnCreate() {
+            MonitorParkingLotActivity.executeOnce=false;
+
+            //ideally call this method when the user initiates parking
+            if(PackageManager.PERMISSION_GRANTED != checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1340);
+            }else{
+                tracker.start(new LocationTracker.LocationUpdateListener() {
+                    @Override
+                    public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
+                        NumberFormat formatter = new DecimalFormat("#0.00000");
+                        //LOG LOCATION UPDATES TO THE CONSOLE FOR DEBUGGING/REFERENCE
+                        Log.i("LOCATION UPDATED", tracker.hasLocation() ? ("old: [" + oldLoc.getLatitude() + ", " + oldLoc.getLongitude() + "]") : "no previous location");
+                        Log.i("LOCATION UPDATED", "new: [" + newLoc.getLatitude() + ", " + newLoc.getLongitude() + "]\n");
+
+                        Lot l = getLot();
+
+                        //if within 50ft of destination, go to conclusion activity
+                        if (l != null && tracker.getLocation().distanceTo(l.getLocation()) < .015) {
+                            tracker.stop();
+                            startActivity(new Intent(MonitorParkingLotActivity.this, ConclusionActivity.class));
+                        }
+
+                        //get updated information from backend - STORED IN Session.getCurrentLotList();
+                        updateAvailability();
+
+                        //DO OTHER STUFF EVERY SO OFTEN
+                        //CODE GOES HERE
+
+
+                    }
+                });
+            }
         }
+
+        /**
+         * Uses the user's preferences to get a recommendation using Algorithm
+         * @param request The object holding the user's parking preferences
+         * @return A SelectedParkingLot object representing the recommended parking lot
+         */
+        private SelectedParkingLot findParkingLot(ParkingRequest request)
+        {
+            // Compute recommended parking lot
+            Resources res = getResources();
+            Algorithm algorithm = Algorithm.getInstance();
+            List<Lot> sortedLots = algorithm.computeRecommendedLots(request);
+            if (sortedLots.size() == 0)
+            {
+                // No lots were found
+                return null;
+            }
+            else
+            {
+                String reason = res.getString(R.string.LOT_REASON_DIST);
+                if (Session.getCurrentUser().getDistORprice() > 50)
+                {
+                    reason = res.getString(R.string.LOT_REASON_COST);
+                }
+
+                return new SelectedParkingLot(sortedLots.get(0).getName(), reason, request.getDestination());
+            }
+        }
+
     }
 
 }
