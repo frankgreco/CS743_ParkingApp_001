@@ -63,10 +63,11 @@
     <string name="LOT_59023_B3">EMS Basement Floor B3</string>
     <string name="LOT_59024">Sandburg Residence Hall</string>
     <string name="LOT_59026">Kennilworth Square Apartments</string>
+    <!-- NW Quad Structure has five floors and 4F and 5F are available for hourly parking. -->
     <string name="LOT_59033_1">NW Quad Structure Floor 1</string>
     <string name="LOT_59033_2">NW Quad Structure Floor 2</string>
     <string name="LOT_59033_3">NW Quad Structure Floor 3</string>
-    <string name="LOT_59033_4">NW Quad Structure Floor 4</string>
+    <string name="LOT_59033_4">NW Quad Structure Floor 4/5</string>
     <string name="LOT_59034">NW Quad at NWQ C and D</string>
     <string name="LOT_59035">NW Quad Near NQ Quad G</string>
     <string name="LOT_59036">NW Quad Near NW Quad E</string>
