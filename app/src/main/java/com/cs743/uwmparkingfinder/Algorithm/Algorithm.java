@@ -1,5 +1,7 @@
 package com.cs743.uwmparkingfinder.Algorithm;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.location.Location;
 
 import com.cs743.uwmparkingfinder.Session.Session;
@@ -7,6 +9,7 @@ import com.cs743.uwmparkingfinder.Structures.Building;
 import com.cs743.uwmparkingfinder.Structures.Lot;
 import com.cs743.uwmparkingfinder.Structures.ParkingRequest;
 import com.cs743.uwmparkingfinder.Structures.Space;
+import com.cs743.uwmparkingfinder.Utility.UTILITY;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.text.DecimalFormat;
 
 /**
  * Created by Masaki Ikuta on 11/20/2015.
@@ -79,6 +83,10 @@ public class Algorithm {
      */
     public List<Lot> computeRecommendedLots(ParkingRequest preferences)
     {
+        //Resources res = getResources();
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(2);
+
         System.out.println("Algorithm: Entry");
 
         // Declare the resulting list
@@ -141,7 +149,7 @@ public class Algorithm {
         {
             double x = computeNormalizedDistance(building, lot);
             double y = getNormalizedParkingCost(lot);
-            double theta = distORprice * 10;
+            double theta = distORprice * 10; // theta ranges from 0 to 90 degree.
             double x_prime = x * Math.cos(Math.toRadians(theta)) + y * Math.sin(Math.toRadians(theta));
 
             // Check space availability
@@ -168,8 +176,9 @@ public class Algorithm {
                 }
             }
 
-            System.out.println("Algorithm:    lot_name = " + lot.getName() + ", distance = " + computeDistanceInMeter(building, lot) + ", fee = " + lot.getRate()
-                    + ", x = " + x + ", y = " + y + ", theta = " + theta + ", x_prime = " + x_prime + ", isCovered() = " + lot.isCovered() + ", isHandicap = " + isHandicapAvailable + ", isElectric = " + isElectricAvailable);
+            System.out.println("Algorithm:    lot_name = " + lot.getName() + ", distance = " + df.format(computeDistanceInMeter(building, lot)) + ", fee = " + df.format(lot.getRate())
+                    + ", x = " + df.format(x) + ", y = " + df.format(y) + ", theta = " + df.format(theta) + ", x_prime = " + df.format(x_prime) + ", isCovered() = " + lot.isCovered() + ", isHandicap = " + isHandicapAvailable + ", isElectric = " + isElectricAvailable);
+            //System.out.println("Algorithm:    lot_name = " + res.getString(UTILITY.convertDbLotNameToUINameID(lot.getName())));
 
             if(allowOutside == false && lot.isCovered() == false) { continue; }
             if (preferences.getHandicapRequired() == true && isHandicapAvailable == false) { continue; }
