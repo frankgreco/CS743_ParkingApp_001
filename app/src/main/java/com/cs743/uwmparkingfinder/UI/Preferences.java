@@ -1,6 +1,5 @@
 package com.cs743.uwmparkingfinder.UI;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -9,6 +8,7 @@ import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cs743.uwmparkingfinder.HTTPManager.HttpManager;
 import com.cs743.uwmparkingfinder.HTTPManager.RequestPackage;
@@ -28,7 +29,7 @@ import com.cs743.uwmparkingfinder.Utility.UTILITY;
  *
  * NOTE: Backend is not updated in this Activity as local use is used. Upon logoff, backend is updated.
  */
-public class Preferences extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener, DialogInterface.OnShowListener{
+public class Preferences extends AppCompatActivity implements View.OnClickListener, DialogInterface.OnShowListener{
 
     private TextView _topInfo;
     private android.text.Spanned _html;
@@ -37,7 +38,6 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
     private SeekBar _seekBar;
     private EditText _first, _last, _username, _phone, _email, _password;
     private TextInputLayout _firstLayout, _lastLayout, _usernameLayout, _phoneLayout, _emailLayout, _passwordLayout;
-    private ProgressDialog _p;
     private String username;
     private AlertDialog alertDialog;
     private AlertDialog.Builder alertDialogBuilder;
@@ -66,42 +66,6 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
 
         //Register OnClickListeners
         _edit.setOnClickListener(this);
-        _seekBar.setOnSeekBarChangeListener(this);
-        _covered.setOnCheckedChangeListener(this);
-        _handicap.setOnCheckedChangeListener(this);
-        _electric.setOnCheckedChangeListener(this);
-    }
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        Session.getCurrentUser().setDistORprice(seekBar.getProgress());
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-        //do nothing
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        Session.getCurrentUser().setDistORprice(seekBar.getProgress());
-    }
-
-    @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        switch (buttonView.getId()){
-            case R.id.switch1:
-                Session.getCurrentUser().setCovered(isChecked);
-                break;
-
-            case R.id.switch2:
-                Session.getCurrentUser().setHandicap(isChecked);
-                break;
-
-            case R.id.switch3:
-                Session.getCurrentUser().setElectric(isChecked);
-                break;
-        }
     }
 
     @Override
@@ -160,18 +124,16 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
 
             case AlertDialog.BUTTON_POSITIVE:
                 if(validateEntries()){
-                    Session.getCurrentUser().setFirst(_first.getText().toString());
-                    Session.getCurrentUser().setLast(_last.getText().toString());
-                    Session.getCurrentUser().setUsername(_username.getText().toString());
-                    Session.getCurrentUser().setPhone(_phone.getText().toString());
-                    Session.getCurrentUser().setEmail(_email.getText().toString());
-                    Session.getCurrentUser().setPassword(_password.getText().toString());
 
                     alertDialog.dismiss();
 
                     //Update log on backend if username changes
-                    if(!username.equals(Session.getCurrentUser().getUsername())){
-                        preBackend();
+                    if(!username.equals(_username.getText().toString())){
+                        saveDialogLocal();
+                        executeWebserviceCallDialogUsernameChange();
+                    }else if(hasPreferencesChangedDialog()){ //username hasn't changed but other info might have
+                        saveDialogLocal();
+                        executeWebserviceCallDialogUsernameSame();
                     }
 
                     //update UI
@@ -181,25 +143,101 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
         }
     }
 
+    private void saveDialogLocal() {
+        Session.getCurrentUser().setFirst(_first.getText().toString());
+        Session.getCurrentUser().setLast(_last.getText().toString());
+        Session.getCurrentUser().setUsername(_username.getText().toString());
+        Session.getCurrentUser().setPhone(_phone.getText().toString());
+        Session.getCurrentUser().setEmail(_email.getText().toString());
+        Session.getCurrentUser().setPassword(_password.getText().toString());
+    }
+
+    private void saveActivityLocal(){
+        Session.getCurrentUser().setDistORprice(_seekBar.getProgress());
+        Session.getCurrentUser().setCovered(_covered.isChecked());
+        Session.getCurrentUser().setHandicap(_handicap.isChecked());
+        Session.getCurrentUser().setElectric(_electric.isChecked());
+    }
+
+
+    private void executeWebserviceCallDialogUsernameChange(){
+        if(UTILITY.isOnline(getApplicationContext())){
+            RequestPackage p = new RequestPackage();
+            p.setMethod("GET");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
+            p.setParam("query", "change_username");
+            p.setParam("old", username);
+            p.setParam("new", Session.getCurrentUser().getUsername());
+            p.setParam("password", Session.getCurrentUser().getPassword());
+            p.setParam("first", Session.getCurrentUser().getFirst());
+            p.setParam("last", Session.getCurrentUser().getLast());
+            p.setParam("phone", Session.getCurrentUser().getPhone());
+            p.setParam("email", Session.getCurrentUser().getEmail());
+            new Save().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+        }else{
+            //connection offline
+        }
+    }
+
+    private void executeWebserviceCallDialogUsernameSame(){
+        if(UTILITY.isOnline(getApplicationContext())){
+            RequestPackage p = new RequestPackage();
+            p.setMethod("GET");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
+            p.setParam("query", "update_dialog");
+            p.setParam("username", Session.getCurrentUser().getUsername());
+            p.setParam("password", Session.getCurrentUser().getPassword());
+            p.setParam("first", Session.getCurrentUser().getFirst());
+            p.setParam("last", Session.getCurrentUser().getLast());
+            p.setParam("phone", Session.getCurrentUser().getPhone());
+            p.setParam("email", Session.getCurrentUser().getEmail());
+            Log.d("url: ", p.getEncodedParams());
+            new Save().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+        }else{
+            //connection offline
+        }
+    }
+
+    private void executeWebserviceCallActivity(){
+        if(UTILITY.isOnline(getApplicationContext())){
+            RequestPackage p = new RequestPackage();
+            p.setMethod("GET");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
+            p.setParam("query", "update_activity");
+            p.setParam("username", Session.getCurrentUser().getUsername());
+            p.setParam("dist_price", String.valueOf(Session.getCurrentUser().getDistORprice()));
+            p.setParam("covered", Session.getCurrentUser().isCovered() ? "true" : "false");
+            p.setParam("electric", Session.getCurrentUser().isElectric() ? "true" : "false");
+            p.setParam("handicap", Session.getCurrentUser().isHandicap() ? "true" : "false");
+            Log.d("url: ", p.getEncodedParams());
+            new Save().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
+        }else{
+            //connection offline
+        }
+    }
+
+    private boolean hasPreferencesChangedDialog(){
+        if(!_first.getText().toString().equalsIgnoreCase(Session.getCurrentUser().getFirst())) return true;
+        if(!_last.getText().toString().equalsIgnoreCase(Session.getCurrentUser().getLast())) return true;
+        if(!_phone.getText().toString().equalsIgnoreCase(Session.getCurrentUser().getPhone())) return true;
+        if(!_email.getText().toString().equalsIgnoreCase(Session.getCurrentUser().getEmail())) return true;
+        if(!_password.getText().toString().equalsIgnoreCase(Session.getCurrentUser().getPassword())) return true;
+        return false;
+    }
+
+    private boolean hasPreferencesChangedActivity(){
+        if(_seekBar.getProgress() != Session.getCurrentUser().getDistORprice()) return true;
+        if(_covered.isChecked() != Session.getCurrentUser().isCovered()) return true;
+        if(_handicap.isChecked() != Session.getCurrentUser().isHandicap()) return true;
+        if(_electric.isChecked() != Session.getCurrentUser().isElectric()) return true;
+        return false;
+    }
+
     @Override
     public void onShow(DialogInterface dialog) {
         _save = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         _save.setId(AlertDialog.BUTTON_POSITIVE);
         _save.setOnClickListener(this);
-    }
-
-    private void preBackend(){
-        if(UTILITY.isOnline(getApplicationContext())){
-            RequestPackage p = new RequestPackage();
-            p.setMethod("GET");
-            p.setUri(UTILITY.UBUNTU_SERVER_URL);
-            p.setParam("query", "change");
-            p.setParam("old", username);
-            p.setParam("new", Session.getCurrentUser().getUsername());
-            new UpdateLogUponUsernameChange().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
-        }else{
-            //connection offline
-        }
     }
 
     private boolean validateEntries(){
@@ -271,27 +309,23 @@ public class Preferences extends AppCompatActivity implements CompoundButton.OnC
         _topInfo.setText(_html);
     }
 
-    public ProgressDialog get_p() {
-        return _p;
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(hasPreferencesChangedActivity()){
+            saveActivityLocal();
+            executeWebserviceCallActivity();
+        }
     }
 
-    public void set_p(ProgressDialog _p) {
-        this._p = _p;
-    }
-
-    private class UpdateLogUponUsernameChange extends AsyncTask<RequestPackage,String,String> {
+    /**
+     * Save info before exiting
+     */
+    private class Save extends AsyncTask<RequestPackage,String,String> {
         @Override
         protected String doInBackground(RequestPackage... params) {
             String content= HttpManager.getData(params[0]);
             return content==null? "fail" : "success";
-        }
-        @Override
-        protected void onPostExecute(String s){
-            UTILITY.controlProgressDialog(false, null, Preferences.this.get_p(), null);
-        }
-        @Override
-        protected void onPreExecute() {
-            Preferences.this.set_p(UTILITY.controlProgressDialog(true, Preferences.this, Preferences.this.get_p(), "Saving Information..."));
         }
     }
 }

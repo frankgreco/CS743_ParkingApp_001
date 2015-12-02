@@ -148,26 +148,7 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
     public void onClick(DialogInterface dialog, int which) {
         switch (which){
             case AlertDialog.BUTTON_POSITIVE:
-                if(UTILITY.isOnline(getApplicationContext())){
-                    RequestPackage p = new RequestPackage();
-                    p.setMethod("GET");
-                    p.setUri(UTILITY.UBUNTU_SERVER_URL);
-                    p.setParam("query", "update");
-                    p.setParam("username", Session.getCurrentUser().getUsername());
-                    p.setParam("password", Session.getCurrentUser().getPassword());
-                    p.setParam("first", Session.getCurrentUser().getFirst());
-                    p.setParam("last", Session.getCurrentUser().getLast());
-                    p.setParam("phone", Session.getCurrentUser().getPhone());
-                    p.setParam("email", Session.getCurrentUser().getEmail());
-                    p.setParam("dist_price", String.valueOf(Session.getCurrentUser().getDistORprice()));
-                    p.setParam("covered", Session.getCurrentUser().isCovered() ? "true" : "false");
-                    p.setParam("handicap", Session.getCurrentUser().isHandicap() ? "true" : "false");
-                    p.setParam("electric", Session.getCurrentUser().isElectric() ? "true" : "false");
-                    Log.d("url: ", p.getEncodedParams());
-                    new Save().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, p);
-                }else{
-                    //connection offline
-                }
+                startActivity(new Intent(MainActivity.this, SimpleLoginActivity.class));
             break;
         }
     }
@@ -285,26 +266,6 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
             } else {
                 System.out.println("No rows available!!!");
             }
-        }
-    }
-
-    /**
-     * Save info before exiting
-     */
-    private class Save extends AsyncTask<RequestPackage,String,String> {
-        @Override
-        protected String doInBackground(RequestPackage... params) {
-            String content= HttpManager.getData(params[0]);
-            return content==null? "fail" : "success";
-        }
-        @Override
-        protected void onPostExecute(String s){
-            UTILITY.controlProgressDialog(false, null, MainActivity.this.get_p(), null);
-            startActivity(new Intent(MainActivity.this, SimpleLoginActivity.class));
-        }
-        @Override
-        protected void onPreExecute() {
-            MainActivity.this.set_p(UTILITY.controlProgressDialog(true, MainActivity.this, MainActivity.this.get_p(), "Saving....."));
         }
     }
 
