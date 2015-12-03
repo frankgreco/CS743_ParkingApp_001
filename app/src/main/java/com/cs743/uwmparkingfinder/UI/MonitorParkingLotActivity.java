@@ -566,7 +566,7 @@ public class MonitorParkingLotActivity extends AppCompatActivity
                         Location curLoc = new Location("");
                         curLoc.setLatitude(newLoc.getLatitude());
                         curLoc.setLongitude(newLoc.getLongitude());
-                        if (l != null && curLoc.distanceTo(l.getLocation()) < .015) {
+                        if (l != null && curLoc.distanceTo(l.getLocation()) < 500) {
                             tracker.stop();
                             startActivity(new Intent(MonitorParkingLotActivity.this, ConclusionActivity.class));
                         }
