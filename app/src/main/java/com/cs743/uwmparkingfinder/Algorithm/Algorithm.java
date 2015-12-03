@@ -194,8 +194,13 @@ public class Algorithm {
         while(it.hasNext())
         {
             Map.Entry pair = (Map.Entry)it.next();
-            System.out.println("Algorithm:    sortedLotList[" + sortedLotList.size() + "] = " + (Lot)pair.getKey());
+            //System.out.println("Algorithm:    sortedLotList[" + sortedLotList.size() + "] = " + (Lot)pair.getKey());
             sortedLotList.add((Lot)pair.getKey());
+        }
+
+        for(int i = 0; i < sortedLotList.size(); i++)
+        {
+            System.out.println("Algorithm:    sortedLotList[" + i + "] = " + sortedLotList.get(i).getName());
         }
 
         System.out.println("Algorithm: Exit");
