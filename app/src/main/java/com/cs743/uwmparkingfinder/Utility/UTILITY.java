@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class UTILITY {
 
-    public static final String UBUNTU_SERVER_URL ="http://ec2-54-152-78-70.compute-1.amazonaws.com/panther_park/scripts.php";
+    public static final String UBUNTU_SERVER_URL ="http://ec2-54-88-199-143.compute-1.amazonaws.com/panther_park/scripts.php";
     public static final int AVAILABLE = 0;
     public static final int ALL = 1;
 
