@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
             //2. Set the Request type
             p.setMethod("GET");
             //3. Set the URL
-            p.setUri("http://ec2-54-152-4-103.compute-1.amazonaws.com/scripts.php");
+            p.setUri(UTILITY.UBUNTU_SERVER_URL);
             //4. Set all of the parameters
             p.setParam("query", "available");
             //5. Make a call to a private class extending AsyncTask which will run off of the main thread.

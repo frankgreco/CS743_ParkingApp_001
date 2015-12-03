@@ -211,8 +211,8 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
                 if(getPassword().getText().toString().equals(s.getPassword())){ //passwords match
                     getOtherInfoFromWebservice();
                     //start intent
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                    SimpleLoginActivity.controlProgressDialog(false, null, SimpleLoginActivity.this.getP(), null);
+                    //startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                    //SimpleLoginActivity.controlProgressDialog(false, null, SimpleLoginActivity.this.getP(), null);
                 }else{
                     SimpleLoginActivity.controlProgressDialog(false, null, SimpleLoginActivity.this.getP(), null);
                     inputLayoutPassword.setError("password incorrect");
@@ -234,7 +234,12 @@ public class SimpleLoginActivity extends AppCompatActivity implements View.OnCli
         }
         @Override
         protected void onPostExecute(List<Building> s) {
+
             Session.setCurrentBuildings(s);
+
+            //start intent
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            SimpleLoginActivity.controlProgressDialog(false, null, SimpleLoginActivity.this.getP(), null);
         }
     }
 
